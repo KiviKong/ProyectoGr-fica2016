@@ -144,7 +144,7 @@ static void display() {
 	translate(&view,-cameraX,0,-cameraZ);
 
 
-	translate(&shipMat,cameraX+2,0,cameraZ);
+	translate(&shipMat,cameraX,0,cameraZ);
 	rotateY(&shipMat,cameraAngle);
 	translate(&shipMat,(sin(cameraAngle))*0.001,0,(-cos(cameraAngle))*0.001-7);
 
