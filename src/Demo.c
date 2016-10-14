@@ -16,8 +16,6 @@
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
 
-
-
 static Cylinder c1;
 static Cylinder c2;
 static Cylinder c3;
@@ -25,14 +23,22 @@ static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
+static short s=1;
 static int motion;
 static float speed = 1;
+static bool correctUp = 0;
+static bool correctDown = 0;
+static bool correctRight = 0;
+static bool correctLeft = 0;
 
 static float cameraX = 0;
+static float cameraY = 0;
 static float cameraZ = 0;
 static float angle = 0;
 static float cameraAngle = 0;
-static float anglespeed=3;
+static float anglespeed = 5;
+static float anglespeed2 = 7;
+static float cameraAngleY = 0;
 
 static void initShaders() {
 	GLuint vShader = compileShader("shaders/projMatrix.vsh", GL_VERTEX_SHADER);
@@ -54,6 +60,10 @@ static void initShaders() {
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
+	if(key==32){
+		s*=-1;
+		cameraAngle+=180*s;
+	}
 	if (key == 27) {
 		glDeleteVertexArrays(1, va);
 		exit(0);
@@ -72,15 +82,15 @@ static void createShape() {
 
 	c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
 	/*c3 = cylinder_create(7,3,0,20,20,color1,color2);
-	glUseProgram(programId);
-	*/
+	 glUseProgram(programId);
+	 */
 
 	cylinder_bind(c1, vertexPosLoc, vertexColLoc);
 	/*cylinder_bind(c2, vertexPosLoc, vertexColLoc);
-	cylinder_bind(c3,vertexPosLoc,vertexColLoc);*/
+	 cylinder_bind(c3,vertexPosLoc,vertexColLoc);*/
 
-	n1=nave_create();
-	nave_bind(n1,vertexPosLoc,vertexColLoc);
+	n1 = nave_create();
+	nave_bind(n1, vertexPosLoc, vertexColLoc);
 
 	//printarray(c1);
 
@@ -89,24 +99,51 @@ static void createShape() {
 static void reshapeFunc(int width, int height) {
 	float aspect = (float) width / height;
 	setPerspective(&projMat, 53, aspect, -1, -100);
-/*
-	if (width > height)
-		setOrtho(&projMat, -3 * aspect, 3 * aspect, -3, 3, -3, 3);
-	else
-		setOrtho(&projMat, -3, 3, -3 / aspect, 3 / aspect, -3, 3);*/
+	/*
+	 if (width > height)
+	 setOrtho(&projMat, -3 * aspect, 3 * aspect, -3, 3, -3, 3);
+	 else
+	 setOrtho(&projMat, -3, 3, -3 / aspect, 3 / aspect, -3, 3);*/
 
 	glViewport(0, 0, width, height);
 }
 
 static void rotateLeft() {
-	cameraAngle+=anglespeed;
+	cameraAngle += anglespeed;
+	/*if (cameraAngle > 60*s)
+		cameraAngle = 60*s;*/
+	if(cameraAngle>360){
+		cameraAngle-=360;
+	}
 }
 static void rotateRight() {
-	cameraAngle-=anglespeed;
+	cameraAngle -= anglespeed;
+	/*if (cameraAngle < -60*s)
+		cameraAngle = -60*s;*/
+	if(cameraAngle<0){
+		cameraAngle+=360;
+	}
 }
 static void moveForward() {
-	cameraX -= sin((cameraAngle) * (M_PI / 180)) * speed;
-	cameraZ -= cos((cameraAngle) * (M_PI / 180)) * speed;
+	cameraX -= sin((cameraAngle) * (M_PI / 180))
+			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
+	cameraZ -= cos((cameraAngle) * (M_PI / 180))
+			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
+	cameraY += sin((cameraAngleY) * (M_PI / 180)) * speed;
+}
+
+static void moveUp() {
+	cameraAngleY += anglespeed;
+	/*if (cameraAngleY > 90)
+		cameraAngleY = 90;*/
+	correctUp = 0;
+}
+static void moveDown() {
+	cameraAngleY -= anglespeed;
+
+	/*if (cameraAngleY < -90)
+		cameraAngleY = -90;*/
+	correctDown = 0;
 }
 
 static void moveBackwards() {
@@ -121,36 +158,67 @@ static void display() {
 	mIdentity(&view);
 	mIdentity(&shipMat);
 	switch (motion) {
-		case 1:
-			break;
-		case GLUT_KEY_RIGHT:
-			rotateRight();
-			break;
-		case GLUT_KEY_LEFT:
-			rotateLeft();
-			break;
-		/*case GLUT_KEY_UP:
-			moveForward();
-			break;
-		case GLUT_KEY_DOWN:
-			moveBackwards();
-			break;*/
-		default:
-			break;
+	case 1:
+		break;
+	case GLUT_KEY_RIGHT:
+		rotateRight();
+		break;
+	case GLUT_KEY_LEFT:
+		rotateLeft();
+		break;
+	case GLUT_KEY_UP:
+		moveUp();
+		break;
+	case GLUT_KEY_DOWN:
+		moveDown();
+		break;
+	default:
+		break;
+	}
+	/*if (correctUp) {
+		cameraAngleY -= anglespeed2;
+		if (cameraAngleY <= 0) {
+			cameraAngleY = 0;
+			correctUp = 0;
 		}
+	} else if (correctDown) {
+		cameraAngleY += anglespeed2;
+		if (cameraAngleY >= 0) {
+			cameraAngleY = 0;
+			correctDown = 0;
+		}
+	}
+	if (correctRight) {
+		cameraAngle += anglespeed2;
+		if (cameraAngle >= 0) {
+			cameraAngle = 0;
+			correctRight = 0;
+		}
+	} else if (correctLeft) {
+		cameraAngle -= anglespeed2;
+		if (cameraAngle <= 0) {
+			cameraAngle = 0;
+			correctLeft = 0;
+		}
+	}*/
 	moveForward();
-	rotateY(&view,-cameraAngle);
+	rotateX(&view, cameraAngleY);
+	rotateY(&view, -cameraAngle);
 
-	translate(&view,-cameraX,0,-cameraZ);
+	//rotateZ(&view,cameraAngle);
+
+	translate(&view, -cameraX, cameraY, -cameraZ);
+
+	translate(&shipMat, cameraX, -cameraY, cameraZ);
+	//rotateZ(&shipMat,-cameraAngle);
+	rotateY(&shipMat, cameraAngle);
+	rotateX(&shipMat, -cameraAngleY);
 
 
-	translate(&shipMat,cameraX,0,cameraZ);
-	rotateY(&shipMat,cameraAngle);
-	translate(&shipMat,(sin(cameraAngle))*0.001,0,(-cos(cameraAngle))*0.001-7);
+	translate(&shipMat, (sin(cameraAngle)) * 0.001 * sin(cameraAngleY),
+			-cos(cameraAngleY) * .001, (-cos(cameraAngle)) * 0.001 - 7);
 
-
-
-	glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	translate(&csMat, -3, 0, -9);
 	//rotateX(&csMat,90);
 	if (angle == 360)
@@ -163,34 +231,46 @@ static void display() {
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 
 	/*cylinder_draw(c1);
-	cylinder_draw(c2);
-	cylinder_draw(c3);*/
+	 cylinder_draw(c2);
+	 cylinder_draw(c3);*/
 	nave_draw(n1);
-	int i=0;
-	int z=0;
-	for( i=0;i<10000;i++){
-	mIdentity(&csMat);
-	if(i%2==0){
-	translate(&csMat, 3, 0, z-=10);
-	}else
-		translate(&csMat,-3,0,z-=10);
-	//rotateX(&csMat, angle+50);
-	//rotateY(&csMat, angle+50);
-	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
-	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
-	cylinder_draw(c1);
+	int i = 0;
+	int z = 0;
+	int x = 0;
+	int k = 0;
+	int j = 0;
+	int y = 0;
+	for (k = 0; k < 30; k++) {
+		for (j = 0; j < 30; j++) {
+			for (i = 0; i < 30; i++) {
+				mIdentity(&csMat);
+				translate(&csMat, x, y, z -= 10);
+
+				//rotateX(&csMat, angle+50);
+				//rotateY(&csMat, angle+50);
+				glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
+				glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
+				glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
+				cylinder_draw(c1);
+			}
+			x += 10;
+			z = 0;
+
+		}
+		x = 0;
+		z = 0;
+		y += 10;
 	}
 	/*cylinder_draw(c2);
-	cylinder_draw(c1);
-	cylinder_draw(c3);*/
+	 cylinder_draw(c1);
+	 cylinder_draw(c3);*/
 	//nave_draw(n1);
-
 	glutSwapBuffers();
 }
 
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
+	if(key==32 )motion=GLUT_KEY_RIGHT;
 	/*
 	 if(key==GLUT_KEY_RIGHT){
 
@@ -203,6 +283,16 @@ static void startMotionFunc(int key, int x, int y) {
 	 }*/
 }
 static void endMotionFunc(int key, int x, int y) {
+	if (key == GLUT_KEY_UP) {
+		correctUp = 1;
+	} else if (key == GLUT_KEY_DOWN) {
+		correctDown = 1;
+	} /*else if (key == GLUT_KEY_RIGHT) {
+		correctRight = 1;
+	} else {
+		correctLeft = 1;
+	}*/
+
 	motion = 0;
 }
 int main(int argc, char **argv) {
@@ -212,7 +302,7 @@ int main(int argc, char **argv) {
 	glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
 
-	glutCreateWindow("Tarea 5");
+	glutCreateWindow("Demo proyecto final");
 	glutDisplayFunc(display);
 	glutKeyboardFunc(exitFunc);
 	glutReshapeFunc(reshapeFunc);
