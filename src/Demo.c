@@ -23,13 +23,18 @@ static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
-static short s=1;
+static short s = 1;
 static int motion;
 static float speed = 1;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
 static bool correctLeft = 0;
+static float shipX = 0;
+static float shipY = 0;
+static float shipZ = 0;
+static float angleZ = 0;
+static float angleY = 0;
 
 static float cameraX = 0;
 static float cameraY = 0;
@@ -60,9 +65,9 @@ static void initShaders() {
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
-	if(key==32){
-		s*=-1;
-		cameraAngle+=180*s;
+	if (key == 32) {
+		s *= -1;
+		cameraAngle += 180 * s;
 	}
 	if (key == 27) {
 		glDeleteVertexArrays(1, va);
@@ -111,17 +116,30 @@ static void reshapeFunc(int width, int height) {
 static void rotateLeft() {
 	cameraAngle += anglespeed;
 	/*if (cameraAngle > 60*s)
-		cameraAngle = 60*s;*/
-	if(cameraAngle>360){
-		cameraAngle-=360;
+	 cameraAngle = 60*s;*/
+	angleZ += anglespeed;
+	if (angleZ > 30)
+		angleZ = 30;
+	shipX -= 0.1;
+	if (shipX < -1.7)
+		shipX = -1.7;
+	if (cameraAngle > 360) {
+		cameraAngle -= 360;
 	}
 }
 static void rotateRight() {
 	cameraAngle -= anglespeed;
 	/*if (cameraAngle < -60*s)
-		cameraAngle = -60*s;*/
-	if(cameraAngle<0){
-		cameraAngle+=360;
+	 cameraAngle = -60*s;*/
+	angleZ -= anglespeed;
+	if (angleZ < -30)
+		angleZ = -30;
+	shipX += 0.1;
+	if (shipX > 1.7)
+		shipX = 1.7;
+
+	if (cameraAngle < 0) {
+		cameraAngle += 360;
 	}
 }
 static void moveForward() {
@@ -135,15 +153,24 @@ static void moveForward() {
 static void moveUp() {
 	cameraAngleY += anglespeed;
 	/*if (cameraAngleY > 90)
-		cameraAngleY = 90;*/
-	correctUp = 0;
+	 cameraAngleY = 90;*/
+	angleY -= anglespeed;
+	if (angleY < -30)
+		angleY = -30;
+	shipY -= 0.1;
+	if (shipY < -1.7)
+		shipY = -1.7;
 }
 static void moveDown() {
 	cameraAngleY -= anglespeed;
-
+	angleY += anglespeed;
+	if (angleY > 30)
+		angleY = 30;
+	shipY += 0.1;
+	if (shipY > 1.7)
+		shipY = 1.7;
 	/*if (cameraAngleY < -90)
-		cameraAngleY = -90;*/
-	correctDown = 0;
+	 cameraAngleY = -90;*/
 }
 
 static void moveBackwards() {
@@ -175,48 +202,74 @@ static void display() {
 	default:
 		break;
 	}
-	/*if (correctUp) {
-		cameraAngleY -= anglespeed2;
-		if (cameraAngleY <= 0) {
-			cameraAngleY = 0;
-			correctUp = 0;
+
+	if (correctUp) {
+		shipY += 0.1;
+		angleY+=anglespeed;
+		if(angleY>=0){
+			angleY=0;
+		}
+		if (shipY >= 0) {
+			shipY = 0;
+		}if(angleY==0 && shipY==0){
+			correctUp=0;
 		}
 	} else if (correctDown) {
-		cameraAngleY += anglespeed2;
-		if (cameraAngleY >= 0) {
-			cameraAngleY = 0;
-			correctDown = 0;
+		shipY -= 0.1;
+		angleY-=anglespeed;
+		if(angleY<=0){
+			angleY=0;
+		}
+		if (shipY <= 0) {
+			shipY = 0;
+		}
+		if(angleY==0 && shipY==0){
+			correctDown=0;
 		}
 	}
 	if (correctRight) {
-		cameraAngle += anglespeed2;
-		if (cameraAngle >= 0) {
-			cameraAngle = 0;
+		shipX -= 0.1;
+		angleZ += anglespeed;
+		if (shipX <= 0) {
+			shipX = 0;
 			correctRight = 0;
 		}
-	} else if (correctLeft) {
-		cameraAngle -= anglespeed2;
-		if (cameraAngle <= 0) {
-			cameraAngle = 0;
+		if (angleZ >= 0) {
+			angleZ = 0;
+		}
+		if (shipX == 0 && angleZ == 0) {
 			correctLeft = 0;
 		}
-	}*/
+	} else if (correctLeft) {
+		shipX += 0.1;
+		angleZ -= anglespeed;
+		if (angleZ <= 0) {
+			angleZ = 0;
+		}
+		if (shipX >= 0) {
+			shipX = 0;
+		}
+		if (shipX == 0 && angleZ == 0) {
+			correctLeft = 0;
+		}
+	}
 	moveForward();
 	rotateX(&view, cameraAngleY);
 	rotateY(&view, -cameraAngle);
 
-	//rotateZ(&view,cameraAngle);
-
 	translate(&view, -cameraX, cameraY, -cameraZ);
 
 	translate(&shipMat, cameraX, -cameraY, cameraZ);
-	//rotateZ(&shipMat,-cameraAngle);
+
 	rotateY(&shipMat, cameraAngle);
 	rotateX(&shipMat, -cameraAngleY);
 
-
 	translate(&shipMat, (sin(cameraAngle)) * 0.001 * sin(cameraAngleY),
 			-cos(cameraAngleY) * .001, (-cos(cameraAngle)) * 0.001 - 7);
+
+	translate(&shipMat, shipX, shipY, shipZ);
+	rotateZ(&shipMat, angleZ);
+	rotateX(&shipMat, angleY);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	translate(&csMat, -3, 0, -9);
@@ -270,7 +323,6 @@ static void display() {
 
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
-	if(key==32 )motion=GLUT_KEY_RIGHT;
 	/*
 	 if(key==GLUT_KEY_RIGHT){
 
@@ -287,11 +339,11 @@ static void endMotionFunc(int key, int x, int y) {
 		correctUp = 1;
 	} else if (key == GLUT_KEY_DOWN) {
 		correctDown = 1;
-	} /*else if (key == GLUT_KEY_RIGHT) {
+	} else if (key == GLUT_KEY_RIGHT) {
 		correctRight = 1;
 	} else {
 		correctLeft = 1;
-	}*/
+	}
 
 	motion = 0;
 }
