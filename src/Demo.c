@@ -126,6 +126,7 @@ static void rotateLeft() {
 	if (cameraAngle > 360) {
 		cameraAngle -= 360;
 	}
+	correctLeft=0;
 }
 static void rotateRight() {
 	cameraAngle -= anglespeed;
@@ -141,6 +142,7 @@ static void rotateRight() {
 	if (cameraAngle < 0) {
 		cameraAngle += 360;
 	}
+	correctRight=0;
 }
 static void moveForward() {
 	cameraX -= sin((cameraAngle) * (M_PI / 180))
@@ -152,14 +154,15 @@ static void moveForward() {
 
 static void moveUp() {
 	cameraAngleY += anglespeed;
-	/*if (cameraAngleY > 90)
-	 cameraAngleY = 90;*/
+	if (cameraAngleY > 90)
+	 cameraAngleY = 90;
 	angleY -= anglespeed;
 	if (angleY < -30)
 		angleY = -30;
 	shipY -= 0.1;
 	if (shipY < -1.7)
 		shipY = -1.7;
+	correctUp=0;
 }
 static void moveDown() {
 	cameraAngleY -= anglespeed;
@@ -169,8 +172,9 @@ static void moveDown() {
 	shipY += 0.1;
 	if (shipY > 1.7)
 		shipY = 1.7;
-	/*if (cameraAngleY < -90)
-	 cameraAngleY = -90;*/
+	if (cameraAngleY < -90)
+	 cameraAngleY = -90;
+	correctDown=0;
 }
 
 static void moveBackwards() {
