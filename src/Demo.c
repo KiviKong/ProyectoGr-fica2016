@@ -12,6 +12,7 @@
 #include <math.h>
 #include "Cylinder.h"
 #include "Nave.h"
+#include "Asteroids.h"
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
@@ -19,6 +20,7 @@ static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 static Cylinder c1;
 static Cylinder c2;
 static Cylinder c3;
+static Asteroid a1;
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
@@ -76,16 +78,18 @@ static void timerFunc(int id) {
 }
 
 static void createShape() {
-	float color1[] = { 0.9, 0.5, 0.7 };
-	float color2[] = { 0.3, 0.1, 0.2 };
+	float color1[] = { 0.5, 0.5, 0.5 };
+	float color2[] = { 0.5, 0.5, 0.5 };
 	//c2 = cylinder_create(2, 2, 2, 4, 3, color2, color1);
 
 	c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
+	a1 = Asteroid_create(3, 1, 1, 36, 12, color1, color2);
 	/*c3 = cylinder_create(7,3,0,20,20,color1,color2);
 	 glUseProgram(programId);
 	 */
 
-	cylinder_bind(c1, vertexPosLoc, vertexColLoc);
+	//cylinder_bind(c1, vertexPosLoc, vertexColLoc);
+	Asteroid_bind(a1, vertexPosLoc, vertexColLoc);
 	/*cylinder_bind(c2, vertexPosLoc, vertexColLoc);
 	 cylinder_bind(c3,vertexPosLoc,vertexColLoc);*/
 
@@ -240,18 +244,19 @@ static void display() {
 	int k = 0;
 	int j = 0;
 	int y = 0;
-	for (k = 0; k < 30; k++) {
-		for (j = 0; j < 30; j++) {
-			for (i = 0; i < 30; i++) {
+	for (k = 0; k < 20; k++) {
+		for (j = 0; j < 20; j++) {
+			for (i = 0; i < 20; i++) {
 				mIdentity(&csMat);
-				translate(&csMat, x, y, z -= 10);
+				translate(&csMat, x, y, z -= 30);
 
-				//rotateX(&csMat, angle+50);
-				//rotateY(&csMat, angle+50);
+				rotateX(&csMat, angle+50);
+				rotateY(&csMat, angle+50);
 				glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 				glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
 				glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
-				cylinder_draw(c1);
+				Asteroid_draw(a1);
+
 			}
 			x += 10;
 			z = 0;
