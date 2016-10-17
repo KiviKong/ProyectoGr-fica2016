@@ -25,7 +25,7 @@ static Mat4 shipMat;
 
 static short s = 1;
 static int motion;
-static float speed = 1;
+static float speed = 0.5;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
@@ -41,8 +41,8 @@ static float cameraY = 0;
 static float cameraZ = 0;
 static float angle = 0;
 static float cameraAngle = 0;
-static float anglespeed = 5;
-static float anglespeed2 = 7;
+static float anglespeed = 3;
+static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 
 static void initShaders() {
@@ -297,9 +297,9 @@ static void display() {
 	int k = 0;
 	int j = 0;
 	int y = 0;
-	for (k = 0; k < 30; k++) {
-		for (j = 0; j < 30; j++) {
-			for (i = 0; i < 30; i++) {
+	for (k = 0; k < 20; k++) {
+		for (j = 0; j < 20; j++) {
+			for (i = 0; i < 20; i++) {
 				mIdentity(&csMat);
 				translate(&csMat, x, y, z -= 10);
 
