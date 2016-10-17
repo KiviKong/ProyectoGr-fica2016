@@ -8,81 +8,76 @@
 #include "Asteroids.h"
 
 
-Asteroid Asteroid_create(float length, float bottomRadius, float topRadius,
-		int slices, int stacks, float bottomColor[3], float topColor[3]){
-		Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
-		new->vertexNum = ((slices * 2) + 2) * stacks * 3;
-		new->indexNum = (((slices * 2) + 2) * stacks) + stacks-1;
-		new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
-		new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
-		new->cylinderIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
-		float lengthChange = length / stacks; //cambio de altura para cada stack
-		float currentLength = length / 2; //punto y donde inicia primer stack
-		float angle = (2 * M_PI) / slices;
-		float radius = topRadius;
-		float radiusChange = (bottomRadius *1.5 ) / (stacks/2);
-		float currentAngle = 0;
-		float colorR = topColor[0];
-		float colorG = topColor[1];
-		float colorB = topColor[2];
-		float colorChangeR = (bottomColor[0] - topColor[0]) / stacks;
-		float colorChangeG = (bottomColor[1] - topColor[1]) / stacks;
-		float colorChangeB = (bottomColor[2] - topColor[2]) / stacks;
-		int pos = 0;
-		int col = 0; //indices para llenar arreglos posicion y color
-		int ind = 0;
-		int indv = 0;
-		int i, j;
-		float cosa =0;
-		for (i = 0; i < stacks; i++) {
-			for (j = 0; j <=slices; j++) {
-				if(j==slices)currentAngle=0;
-				float ruido = rand() % 15;
-				ruido /= 100;
-				ruido = 1 - ruido;
-				new->vertexPos[pos++] = cosf(currentAngle)
-						* (radius);
-				new->vertexPos[pos++] = currentLength;
-				new->vertexPos[pos++] = -sinf(currentAngle)
-						* (radius);
+Asteroid Asteroid_create(double r, int lats, int longs){
+	Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
+	new->vertexNum = ((lats * 2) + 2) * longs * 3;
+	new->indexNum = (((lats * 2) + 2) * longs) * longs;
+	new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
+	new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
+	new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
 
-				new->vertexCol[col++] = (colorR ) * ruido;
-				new->vertexCol[col++] = (colorG ) * ruido;
-				new->vertexCol[col++] = (colorB ) * ruido;
+	float colorR = 0.5;
+	float colorG = 0.5;
+	float colorB = 0.5;
+	float colorChangeR = (0.7 - 0.5) / longs;
+	float colorChangeG = (0.7 - 0.5) / longs;
+	float colorChangeB = (0.7 - 0.5) / longs;
 
-				new->cylinderIndex[ind++] = indv++;
 
-				if(i<stacks/2)
-					cosa = radius + radiusChange;
-				else
-					cosa = radius - radiusChange;
+	int i, j;
+	int pos =0, col =0;
+	int ind = 0;
+	int indv = 0;
+	float lng, x, y, ruido,lat0,lat1,z0,z1,zr0,zr1;
+	      for(i = 0; i < lats; i++) {
+	    	  ruido = rand() % 15;
+	    	  ruido /= 100;
+	    	  ruido = 1 - ruido;
 
-				new->vertexPos[pos++] = cosf(currentAngle) * (cosa);
-				new->vertexPos[pos++] = currentLength-lengthChange;
-				new->vertexPos[pos++] = -sinf(currentAngle) * (cosa);
+	           lat0 = M_PI * (-0.5 + (float) (i - 1) / lats);
+	           z0  = sin(lat0) *r;
+	           zr0 =  cos(lat0)*r;
 
-				new->vertexCol[col++] = (colorR+colorChangeR) * ruido;
-				new->vertexCol[col++] = (colorG+colorChangeG) * ruido;
-				new->vertexCol[col++] = (colorB+colorChangeB) * ruido;
+	           lat1 = M_PI * (-0.5 + (float) i / lats);
+	           z1 = sin(lat1) *r;
+	           zr1 = cos(lat1) *r;
 
-				new->cylinderIndex[ind++] = indv++;
 
-				currentAngle += angle;
+	           for(j = 0; j <= longs; j++) {
+	        	   //if(j==longs) lng = 2 * M_PI * (float) (0 - 1) / longs;
 
-			}
-			if(i!=stacks-1)
-			new->cylinderIndex[ind++] = 0xFFFF;
-			//new->cylinderIndex[ind++]=indv++;
-			colorR += colorChangeR;
-			colorG += colorChangeG;
-			colorB += colorChangeB;
-			currentAngle = 0;
-			if(i<stacks/2)
-			radius += radiusChange;
-			else
-			radius -= radiusChange;
-			currentLength -= lengthChange;
-		}
+	               lng = 2 * M_PI * (float) (j - 1) / longs;
+	               x = cos(lng);
+	               y = sin(lng);
+
+	               new->vertexPos[pos++] = x * zr0;
+	               new->vertexPos[pos++] = y * zr0;
+	               new->vertexPos[pos++] = z0;
+	               new->AsteroidIndex[ind++] = indv++;
+
+	               new->vertexCol[col++] = (colorR ) * ruido;
+	               new->vertexCol[col++] = (colorG ) * ruido;
+	               new->vertexCol[col++] = (colorB ) * ruido;
+
+	               new->vertexPos[pos++] = x * zr1;
+	               new->vertexPos[pos++] = y * zr1;
+	               new->vertexPos[pos++] = z1 ;
+	               new->AsteroidIndex[ind++] = indv++;
+
+	               new->vertexCol[col++] = (colorR+colorChangeR) * ruido;
+	               new->vertexCol[col++] = (colorG+colorChangeG) * ruido;
+	               new->vertexCol[col++] = (colorB+colorChangeB) * ruido;
+
+	           }
+
+	           new->AsteroidIndex[ind++] = 0xFFFF;
+
+
+	           colorR += colorChangeR;
+	           colorG += colorChangeG;
+	           colorB += colorChangeB;
+
+	      }
 
 		return new;
 
@@ -106,7 +101,7 @@ void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc){
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, a->indexBufferId[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (a->indexNum) * sizeof(GLuint),
-		a->cylinderIndex,
+		a->AsteroidIndex,
 		GL_STATIC_DRAW);
 
 }

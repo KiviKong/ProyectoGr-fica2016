@@ -83,7 +83,7 @@ static void createShape() {
 	//c2 = cylinder_create(2, 2, 2, 4, 3, color2, color1);
 
 	c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
-	a1 = Asteroid_create(3, 1, 1, 36, 12, color1, color2);
+	a1 = Asteroid_create(1, 10, 10);
 	/*c3 = cylinder_create(7,3,0,20,20,color1,color2);
 	 glUseProgram(programId);
 	 */
@@ -244,9 +244,9 @@ static void display() {
 	int k = 0;
 	int j = 0;
 	int y = 0;
-	for (k = 0; k < 20; k++) {
-		for (j = 0; j < 20; j++) {
-			for (i = 0; i < 20; i++) {
+	for (k = 0; k < 10; k++) {
+		for (j = 0; j < 10; j++) {
+			for (i = 0; i < 10; i++) {
 				mIdentity(&csMat);
 				translate(&csMat, x, y, z -= 30);
 

@@ -17,7 +17,7 @@
 struct strAsteroid {
 	float (*vertexPos);
 	float *vertexCol;
-	GLuint *cylinderIndex;
+	GLuint *AsteroidIndex;
 	int vertexNum;
 	int indexNum;
 	GLuint vertexId;
@@ -25,8 +25,7 @@ struct strAsteroid {
 
 };
 typedef struct strAsteroid* Asteroid;
-Asteroid Asteroid_create(float length, float bottomRadius, float topRadius,
-		int slices, int stacks, float bottomColor[3], float topColor[3]);
+Asteroid Asteroid_create(double r, int lats, int longs);
 void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc);
 void Asteroid_destroy(Asteroid);
 void Asteroid_draw(Asteroid);
