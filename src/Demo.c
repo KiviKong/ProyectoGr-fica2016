@@ -17,29 +17,31 @@
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
 
-static Cylinder c1;
-static Cylinder c2;
-static Cylinder c3;
-static Asteroid a1;
+static Asteroid asteroids[1];
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
-static short s=1;
+static short s = 1;
 static int motion;
-static float speed = 1;
+static float speed = 0.5;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
 static bool correctLeft = 0;
+static float shipX = 0;
+static float shipY = 0;
+static float shipZ = 0;
+static float angleZ = 0;
+static float angleY = 0;
 
 static float cameraX = 0;
 static float cameraY = 0;
 static float cameraZ = 0;
 static float angle = 0;
 static float cameraAngle = 0;
-static float anglespeed = 5;
-static float anglespeed2 = 7;
+static float anglespeed = 3;
+static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 
 static void initShaders() {
@@ -62,9 +64,9 @@ static void initShaders() {
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
-	if(key==32){
-		s*=-1;
-		cameraAngle+=180*s;
+	if (key == 32) {
+		s *= -1;
+		cameraAngle += 180 * s;
 	}
 	if (key == 27) {
 		glDeleteVertexArrays(1, va);
@@ -78,18 +80,19 @@ static void timerFunc(int id) {
 }
 
 static void createShape() {
-	float color1[] = { 0.5, 0.5, 0.5 };
-	float color2[] = { 0.5, 0.5, 0.5 };
+	float color1[] = { 0.9, 0.5, 0.7 };
+	float color2[] = { 0.3, 0.1, 0.2 };
 	//c2 = cylinder_create(2, 2, 2, 4, 3, color2, color1);
 
-	c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
-	a1 = Asteroid_create(1, 10, 10);
+	//c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
+	asteroids[0] = Asteroid_create(2,10,10);
+
 	/*c3 = cylinder_create(7,3,0,20,20,color1,color2);
 	 glUseProgram(programId);
 	 */
 
 	//cylinder_bind(c1, vertexPosLoc, vertexColLoc);
-	Asteroid_bind(a1, vertexPosLoc, vertexColLoc);
+	Asteroid_bind(asteroids[0], vertexPosLoc, vertexColLoc);
 	/*cylinder_bind(c2, vertexPosLoc, vertexColLoc);
 	 cylinder_bind(c3,vertexPosLoc,vertexColLoc);*/
 
@@ -115,18 +118,33 @@ static void reshapeFunc(int width, int height) {
 static void rotateLeft() {
 	cameraAngle += anglespeed;
 	/*if (cameraAngle > 60*s)
-		cameraAngle = 60*s;*/
-	if(cameraAngle>360){
-		cameraAngle-=360;
+	 cameraAngle = 60*s;*/
+	angleZ += anglespeed;
+	if (angleZ > 30)
+		angleZ = 30;
+	shipX -= 0.1;
+	if (shipX < -1.7)
+		shipX = -1.7;
+	if (cameraAngle > 360) {
+		cameraAngle -= 360;
 	}
+	correctLeft=0;
 }
 static void rotateRight() {
 	cameraAngle -= anglespeed;
 	/*if (cameraAngle < -60*s)
-		cameraAngle = -60*s;*/
-	if(cameraAngle<0){
-		cameraAngle+=360;
+	 cameraAngle = -60*s;*/
+	angleZ -= anglespeed;
+	if (angleZ < -30)
+		angleZ = -30;
+	shipX += 0.1;
+	if (shipX > 1.7)
+		shipX = 1.7;
+
+	if (cameraAngle < 0) {
+		cameraAngle += 360;
 	}
+	correctRight=0;
 }
 static void moveForward() {
 	cameraX -= sin((cameraAngle) * (M_PI / 180))
@@ -138,16 +156,27 @@ static void moveForward() {
 
 static void moveUp() {
 	cameraAngleY += anglespeed;
-	/*if (cameraAngleY > 90)
-		cameraAngleY = 90;*/
-	correctUp = 0;
+	if (cameraAngleY > 90)
+	 cameraAngleY = 90;
+	angleY -= anglespeed;
+	if (angleY < -30)
+		angleY = -30;
+	shipY -= 0.1;
+	if (shipY < -1.7)
+		shipY = -1.7;
+	correctUp=0;
 }
 static void moveDown() {
 	cameraAngleY -= anglespeed;
-
-	/*if (cameraAngleY < -90)
-		cameraAngleY = -90;*/
-	correctDown = 0;
+	angleY += anglespeed;
+	if (angleY > 30)
+		angleY = 30;
+	shipY += 0.1;
+	if (shipY > 1.7)
+		shipY = 1.7;
+	if (cameraAngleY < -90)
+	 cameraAngleY = -90;
+	correctDown=0;
 }
 
 static void moveBackwards() {
@@ -179,48 +208,74 @@ static void display() {
 	default:
 		break;
 	}
-	/*if (correctUp) {
-		cameraAngleY -= anglespeed2;
-		if (cameraAngleY <= 0) {
-			cameraAngleY = 0;
-			correctUp = 0;
+
+	if (correctUp) {
+		shipY += 0.1;
+		angleY+=anglespeed;
+		if(angleY>=0){
+			angleY=0;
+		}
+		if (shipY >= 0) {
+			shipY = 0;
+		}if(angleY==0 && shipY==0){
+			correctUp=0;
 		}
 	} else if (correctDown) {
-		cameraAngleY += anglespeed2;
-		if (cameraAngleY >= 0) {
-			cameraAngleY = 0;
-			correctDown = 0;
+		shipY -= 0.1;
+		angleY-=anglespeed;
+		if(angleY<=0){
+			angleY=0;
+		}
+		if (shipY <= 0) {
+			shipY = 0;
+		}
+		if(angleY==0 && shipY==0){
+			correctDown=0;
 		}
 	}
 	if (correctRight) {
-		cameraAngle += anglespeed2;
-		if (cameraAngle >= 0) {
-			cameraAngle = 0;
+		shipX -= 0.1;
+		angleZ += anglespeed;
+		if (shipX <= 0) {
+			shipX = 0;
 			correctRight = 0;
 		}
-	} else if (correctLeft) {
-		cameraAngle -= anglespeed2;
-		if (cameraAngle <= 0) {
-			cameraAngle = 0;
+		if (angleZ >= 0) {
+			angleZ = 0;
+		}
+		if (shipX == 0 && angleZ == 0) {
 			correctLeft = 0;
 		}
-	}*/
+	} else if (correctLeft) {
+		shipX += 0.1;
+		angleZ -= anglespeed;
+		if (angleZ <= 0) {
+			angleZ = 0;
+		}
+		if (shipX >= 0) {
+			shipX = 0;
+		}
+		if (shipX == 0 && angleZ == 0) {
+			correctLeft = 0;
+		}
+	}
 	moveForward();
 	rotateX(&view, cameraAngleY);
 	rotateY(&view, -cameraAngle);
 
-	//rotateZ(&view,cameraAngle);
-
 	translate(&view, -cameraX, cameraY, -cameraZ);
 
 	translate(&shipMat, cameraX, -cameraY, cameraZ);
-	//rotateZ(&shipMat,-cameraAngle);
+
 	rotateY(&shipMat, cameraAngle);
 	rotateX(&shipMat, -cameraAngleY);
 
-
 	translate(&shipMat, (sin(cameraAngle)) * 0.001 * sin(cameraAngleY),
 			-cos(cameraAngleY) * .001, (-cos(cameraAngle)) * 0.001 - 7);
+
+	translate(&shipMat, shipX, shipY, shipZ);
+	rotateZ(&shipMat, angleZ);
+	rotateX(&shipMat, angleY);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	translate(&csMat, -3, 0, -9);
@@ -244,19 +299,18 @@ static void display() {
 	int k = 0;
 	int j = 0;
 	int y = 0;
-	for (k = 0; k < 10; k++) {
-		for (j = 0; j < 10; j++) {
-			for (i = 0; i < 10; i++) {
+	for (k = 0; k < 20; k++) {
+		for (j = 0; j < 20; j++) {
+			for (i = 0; i < 20; i++) {
 				mIdentity(&csMat);
-				translate(&csMat, x, y, z -= 30);
+				translate(&csMat, x, y, z -= 10);
 
 				rotateX(&csMat, angle+50);
 				rotateY(&csMat, angle+50);
 				glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 				glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
 				glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
-				Asteroid_draw(a1);
-
+				Asteroid_draw(asteroids[0]);
 			}
 			x += 10;
 			z = 0;
@@ -275,16 +329,11 @@ static void display() {
 
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
-	if(key==32 )motion=GLUT_KEY_RIGHT;
 	/*
 	 if(key==GLUT_KEY_RIGHT){
-
 	 }else if(key==GLUT_KEY_LEFT){
-
 	 }else if(key==GLUT_KEY_DOWN){
-
 	 }else if(key==GLUT_KEY_UP){
-
 	 }*/
 }
 static void endMotionFunc(int key, int x, int y) {
@@ -292,11 +341,11 @@ static void endMotionFunc(int key, int x, int y) {
 		correctUp = 1;
 	} else if (key == GLUT_KEY_DOWN) {
 		correctDown = 1;
-	} /*else if (key == GLUT_KEY_RIGHT) {
+	} else if (key == GLUT_KEY_RIGHT) {
 		correctRight = 1;
 	} else {
 		correctLeft = 1;
-	}*/
+	}
 
 	motion = 0;
 }
@@ -318,10 +367,9 @@ int main(int argc, char **argv) {
 	createShape();
 	//printf("%f",c1->vertexPos);
 	//display();
-	glClearColor(0.05, 0.05, 0.10, 1.0);
+	glClearColor(0.00, 0.00, 0.00, 0.0);
 	glutMainLoop();
 
-	cylinder_destroy(c1);
+	Asteroid_destroy(asteroids[0]);
 	return 0;
 }
-

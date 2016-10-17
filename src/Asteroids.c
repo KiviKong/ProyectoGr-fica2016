@@ -16,12 +16,12 @@ Asteroid Asteroid_create(double r, int lats, int longs){
 	new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
 	new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
 
-	float colorR = 0.5;
-	float colorG = 0.5;
-	float colorB = 0.5;
-	float colorChangeR = (0.7 - 0.5) / longs;
-	float colorChangeG = (0.7 - 0.5) / longs;
-	float colorChangeB = (0.7 - 0.5) / longs;
+	float colorR = 0.2;
+	float colorG = 0.2;
+	float colorB = 0.2;
+	float colorChangeR = (0.3 - 0.2) / longs;
+	float colorChangeG = (0.3 - 0.2) / longs;
+	float colorChangeB = (0.3 - 0.2) / longs;
 
 
 	int i, j;
