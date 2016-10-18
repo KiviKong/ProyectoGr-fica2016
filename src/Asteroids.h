@@ -22,13 +22,16 @@ struct strAsteroid {
 	int indexNum;
 	GLuint vertexId;
 	GLuint* indexBufferId;
+	int x, y, z, speed;
 
 };
 typedef struct strAsteroid* Asteroid;
-Asteroid Asteroid_create(double r, int lats, int longs);
+Asteroid Asteroid_create(double r, int lats, int longs, int feo);
 void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc);
 void Asteroid_destroy(Asteroid);
 void Asteroid_draw(Asteroid);
+float updateAsteroidZ(Asteroid a);
+void setVelAsteroid(Asteroid a, float vel);
 
 
 #endif /* ASTEROIDS_H_ */

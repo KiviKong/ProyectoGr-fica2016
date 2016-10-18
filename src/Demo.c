@@ -16,15 +16,17 @@
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
-
-static Asteroid asteroids[1];
+static const int  numAsteroids = 100;
+static Asteroid asteroids[100];
+static int iterator;
+static Mat4 csMat;
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
 static short s = 1;
 static int motion;
-static float speed = 0.5;
+static float speed = 0;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
@@ -43,6 +45,47 @@ static float cameraAngle = 0;
 static float anglespeed = 3;
 static float anglespeed2 = 5;
 static float cameraAngleY = 0;
+static float aspect;
+
+static void createAsteroids(){
+	int i;
+	float randVel;
+	float randRadio;
+	float randFeo;
+	for(i=0; i<numAsteroids; i++){
+		randVel = rand() % 10;
+		randRadio = rand() % 10;
+		randFeo = rand() % 2;
+		asteroids[i] = Asteroid_create(randRadio,10,10,randFeo);
+		setVelAsteroid(asteroids[i],randVel);
+	}
+
+}
+
+static void bindAsteroids(){
+	int i;
+	for(i=0; i<numAsteroids; i++){
+		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc);
+	}
+}
+
+static void drawAsteroids(){
+	for(iterator=0; iterator< numAsteroids; iterator++){
+		mIdentity(&csMat);
+		translate(&csMat,asteroids[iterator]->x,asteroids[iterator]->y,updateAsteroidZ(asteroids[iterator]));
+		rotateX(&csMat, angle+50);
+		glUniformMatrix4fv(modelMatrixLoc,1,GL_TRUE, csMat.values);
+		Asteroid_draw(asteroids[iterator]);
+	}
+
+}
+static void destroyAsteroids(){
+	int i;
+	for(i=0; i< numAsteroids; i++){
+		Asteroid_destroy(asteroids[i]);
+
+	}
+}
 
 static void initShaders() {
 	GLuint vShader = compileShader("shaders/projMatrix.vsh", GL_VERTEX_SHADER);
@@ -80,21 +123,10 @@ static void timerFunc(int id) {
 }
 
 static void createShape() {
-	float color1[] = { 0.9, 0.5, 0.7 };
-	float color2[] = { 0.3, 0.1, 0.2 };
-	//c2 = cylinder_create(2, 2, 2, 4, 3, color2, color1);
 
-	//c1 = cylinder_create(5, 2, 1, 6, 12, color1, color2);
-	asteroids[0] = Asteroid_create(2,10,10);
+	createAsteroids();
+	bindAsteroids();
 
-	/*c3 = cylinder_create(7,3,0,20,20,color1,color2);
-	 glUseProgram(programId);
-	 */
-
-	//cylinder_bind(c1, vertexPosLoc, vertexColLoc);
-	Asteroid_bind(asteroids[0], vertexPosLoc, vertexColLoc);
-	/*cylinder_bind(c2, vertexPosLoc, vertexColLoc);
-	 cylinder_bind(c3,vertexPosLoc,vertexColLoc);*/
 
 	n1 = nave_create();
 	nave_bind(n1, vertexPosLoc, vertexColLoc);
@@ -104,8 +136,8 @@ static void createShape() {
 }
 
 static void reshapeFunc(int width, int height) {
-	float aspect = (float) width / height;
-	setPerspective(&projMat, 53, aspect, -1, -100);
+	aspect = (float) width / height;
+	setPerspective(&projMat, 53, aspect, -1, -500);
 	/*
 	 if (width > height)
 	 setOrtho(&projMat, -3 * aspect, 3 * aspect, -3, 3, -3, 3);
@@ -185,7 +217,6 @@ static void moveBackwards() {
 }
 
 static void display() {
-	Mat4 csMat;
 	mIdentity(&csMat);
 	Mat4 view;
 	mIdentity(&view);
@@ -293,33 +324,10 @@ static void display() {
 	 cylinder_draw(c2);
 	 cylinder_draw(c3);*/
 	nave_draw(n1);
-	int i = 0;
-	int z = 0;
-	int x = 0;
-	int k = 0;
-	int j = 0;
-	int y = 0;
-	for (k = 0; k < 20; k++) {
-		for (j = 0; j < 20; j++) {
-			for (i = 0; i < 20; i++) {
-				mIdentity(&csMat);
-				translate(&csMat, x, y, z -= 10);
 
-				rotateX(&csMat, angle+50);
-				rotateY(&csMat, angle+50);
-				glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
-				glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
-				glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
-				Asteroid_draw(asteroids[0]);
-			}
-			x += 10;
-			z = 0;
+	drawAsteroids();
 
-		}
-		x = 0;
-		z = 0;
-		y += 10;
-	}
+
 	/*cylinder_draw(c2);
 	 cylinder_draw(c1);
 	 cylinder_draw(c3);*/
@@ -370,6 +378,7 @@ int main(int argc, char **argv) {
 	glClearColor(0.00, 0.00, 0.00, 0.0);
 	glutMainLoop();
 
-	Asteroid_destroy(asteroids[0]);
+	destroyAsteroids();
 	return 0;
 }
+

@@ -8,7 +8,7 @@
 #include "Asteroids.h"
 
 
-Asteroid Asteroid_create(double r, int lats, int longs){
+Asteroid Asteroid_create(double r, int lats, int longs, int feo){
 	Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
 	new->vertexNum = ((lats * 2) + 2) * longs * 3;
 	new->indexNum = (((lats * 2) + 2) * longs) * longs;
@@ -53,7 +53,11 @@ Asteroid Asteroid_create(double r, int lats, int longs){
 	               new->vertexPos[pos++] = x * zr0;
 	               new->vertexPos[pos++] = y * zr0;
 	               new->vertexPos[pos++] = z0;
-	               new->AsteroidIndex[ind++] = indv++;
+
+	               if(feo ==0)
+	            	   new->AsteroidIndex[ind++] = rand() % new->vertexNum;
+	               else
+	            	   new->AsteroidIndex[ind++] = indv++;
 
 	               new->vertexCol[col++] = (colorR ) * ruido;
 	               new->vertexCol[col++] = (colorG ) * ruido;
@@ -62,7 +66,11 @@ Asteroid Asteroid_create(double r, int lats, int longs){
 	               new->vertexPos[pos++] = x * zr1;
 	               new->vertexPos[pos++] = y * zr1;
 	               new->vertexPos[pos++] = z1 ;
-	               new->AsteroidIndex[ind++] = indv++;
+
+	               if(feo ==0)
+	               	   new->AsteroidIndex[ind++] = rand() % new->vertexNum;
+	               else
+	               	   new->AsteroidIndex[ind++] = indv++;
 
 	               new->vertexCol[col++] = (colorR+colorChangeR) * ruido;
 	               new->vertexCol[col++] = (colorG+colorChangeG) * ruido;
@@ -78,7 +86,10 @@ Asteroid Asteroid_create(double r, int lats, int longs){
 	           colorB += colorChangeB;
 
 	      }
-
+	      new->speed =0;
+	      new->x = rand() % 100 +(-50);
+	      new->y = rand() % 100 +(-50);
+	      new->z = 0;
 		return new;
 
 }
@@ -106,7 +117,11 @@ void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc){
 
 }
 void Asteroid_destroy(Asteroid a){
-
+	free(a->vertexPos);
+		free(a->vertexCol);
+		free(a->AsteroidIndex);
+		free(a->indexBufferId);
+		free(a);
 }
 void Asteroid_draw(Asteroid a){
 	glEnable(GL_PRIMITIVE_RESTART);
@@ -119,6 +134,18 @@ void Asteroid_draw(Asteroid a){
 
 	glDrawElements(GL_TRIANGLE_STRIP, a->indexNum, GL_UNSIGNED_INT, 0);
 
+}
+
+float updateAsteroidZ(Asteroid a){
+
+	if(a->z == 0)
+		return 	a->z = -500;
+	else
+		return a->z += a->speed;
+}
+
+void setVelAsteroid(Asteroid a, float vel){
+	a->speed = vel;
 }
 
 
