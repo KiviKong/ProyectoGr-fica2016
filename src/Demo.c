@@ -14,10 +14,12 @@
 #include "Nave.h"
 #include "Asteroids.h"
 
+#define numAsteroids 100
+
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
-static const int numAsteroids = 100;
-static Asteroid asteroids[100];
+
+static Asteroid asteroids[numAsteroids];
 static int iterator;
 static Mat4 csMat;
 static Nave n1;
@@ -53,7 +55,7 @@ static float cameraY = 0;
 static float cameraZ = 0;
 static float angle = 0;
 static float cameraAngle = 0;
-static float anglespeed = 3;
+static float anglespeed = 1;
 static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 static float aspect;
