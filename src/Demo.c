@@ -16,7 +16,7 @@
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
-static const int  numAsteroids = 100;
+static const int numAsteroids = 100;
 static Asteroid asteroids[100];
 static int iterator;
 static Mat4 csMat;
@@ -24,11 +24,17 @@ static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
-static float limiteInfY=-30;
-static float limiteSY=30;
-static float limiteIX=-30;
-static float limiteSX=30;
+static float limiteInfY = -30;
+static float limiteSY = 30;
+static float limiteIX = -30;
+static float limiteSX = 30;
 
+static short up = 0x01;
+static short down = 0x02;
+static short left = 0x08;
+static short right = 0x04;
+
+static short accion = 0;
 static short s = 1;
 static int motion;
 static float speed = 5;
@@ -52,41 +58,42 @@ static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 static float aspect;
 
-static void createAsteroids(){
+static void createAsteroids() {
 	int i;
 	float randVel;
 	float randRadio;
 	float randFeo;
-	for(i=0; i<numAsteroids; i++){
+	for (i = 0; i < numAsteroids; i++) {
 		randVel = rand() % 10;
 		randRadio = rand() % 10;
 		randFeo = rand() % 2;
-		asteroids[i] = Asteroid_create(randRadio,10,10,randFeo);
-		setVelAsteroid(asteroids[i],randVel);
+		asteroids[i] = Asteroid_create(randRadio, 10, 10, randFeo);
+		setVelAsteroid(asteroids[i], randVel);
 	}
 
 }
 
-static void bindAsteroids(){
+static void bindAsteroids() {
 	int i;
-	for(i=0; i<numAsteroids; i++){
+	for (i = 0; i < numAsteroids; i++) {
 		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc);
 	}
 }
 
-static void drawAsteroids(){
-	for(iterator=0; iterator< numAsteroids; iterator++){
+static void drawAsteroids() {
+	for (iterator = 0; iterator < numAsteroids; iterator++) {
 		mIdentity(&csMat);
-		translate(&csMat,asteroids[iterator]->x,asteroids[iterator]->y,updateAsteroidZ(asteroids[iterator]));
-		rotateX(&csMat, angle+50);
-		glUniformMatrix4fv(modelMatrixLoc,1,GL_TRUE, csMat.values);
+		translate(&csMat, asteroids[iterator]->x, asteroids[iterator]->y,
+				updateAsteroidZ(asteroids[iterator]));
+		rotateX(&csMat, angle + 50);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
 		Asteroid_draw(asteroids[iterator]);
 	}
 
 }
-static void destroyAsteroids(){
+static void destroyAsteroids() {
 	int i;
-	for(i=0; i< numAsteroids; i++){
+	for (i = 0; i < numAsteroids; i++) {
 		Asteroid_destroy(asteroids[i]);
 
 	}
@@ -132,7 +139,6 @@ static void createShape() {
 	createAsteroids();
 	bindAsteroids();
 
-
 	n1 = nave_create();
 	nave_bind(n1, vertexPosLoc, vertexColLoc);
 
@@ -165,7 +171,7 @@ static void rotateLeft() {
 	if (cameraAngle > 20) {
 		cameraAngle = 20;
 	}
-	correctLeft=0;
+	correctLeft = 0;
 }
 static void rotateRight() {
 	cameraAngle -= anglespeed;
@@ -179,34 +185,38 @@ static void rotateRight() {
 		shipX = 1.7;
 
 	if (cameraAngle < -20) {
-		cameraAngle =-20;
+		cameraAngle = -20;
 	}
-	correctRight=0;
+	correctRight = 0;
 }
 static void moveForward() {
 	cameraX -= sin((cameraAngle) * (M_PI / 180))
 			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
-	if(cameraX>limiteSX)cameraX=limiteSX;
-	if(cameraX<limiteIX)cameraX=limiteIX;
+	if (cameraX > limiteSX)
+		cameraX = limiteSX;
+	if (cameraX < limiteIX)
+		cameraX = limiteIX;
 
 	/*cameraZ -= cos((cameraAngle) * (M_PI / 180))
-			* (cos((cameraAngleY) * (M_PI / 180))) * speed;*/
+	 * (cos((cameraAngleY) * (M_PI / 180))) * speed;*/
 	cameraY += sin((cameraAngleY) * (M_PI / 180)) * speed;
-	if(cameraY>limiteSY)cameraY=limiteSY;
-	if(cameraY<limiteInfY)cameraY=limiteInfY;
+	if (cameraY > limiteSY)
+		cameraY = limiteSY;
+	if (cameraY < limiteInfY)
+		cameraY = limiteInfY;
 }
 
 static void moveUp() {
 	cameraAngleY += anglespeed;
 	if (cameraAngleY > 20)
-	 cameraAngleY = 20;
+		cameraAngleY = 20;
 	angleY -= anglespeed;
 	if (angleY < -30)
 		angleY = -30;
 	shipY -= 0.05;
 	if (shipY < -1.7)
 		shipY = -1.7;
-	correctUp=0;
+	correctUp = 0;
 }
 static void moveDown() {
 	cameraAngleY -= anglespeed;
@@ -217,8 +227,8 @@ static void moveDown() {
 	if (shipY > 1.7)
 		shipY = 1.7;
 	if (cameraAngleY < -20)
-	 cameraAngleY = -20;
-	correctDown=0;
+		cameraAngleY = -20;
+	correctDown = 0;
 }
 
 static void moveBackwards() {
@@ -231,63 +241,77 @@ static void display() {
 	Mat4 view;
 	mIdentity(&view);
 	mIdentity(&shipMat);
-	switch (motion) {
-	case 1:
-		break;
-	case GLUT_KEY_RIGHT:
-		rotateRight();
-		break;
-	case GLUT_KEY_LEFT:
-		rotateLeft();
-		break;
-	case GLUT_KEY_UP:
+	/*
+	 switch (motion) {
+	 case 1:
+	 break;
+	 case GLUT_KEY_RIGHT:
+	 rotateRight();
+	 break;
+	 case GLUT_KEY_LEFT:
+	 rotateLeft();
+	 break;
+	 case GLUT_KEY_UP:
+	 moveUp();
+	 break;
+	 case GLUT_KEY_DOWN:
+	 moveDown();
+	 break;
+	 default:
+	 break;
+	 }*/
+	if ((accion & up) != 0) {
 		moveUp();
-		break;
-	case GLUT_KEY_DOWN:
+	}
+	else if ((accion & down) != 0) {
 		moveDown();
-		break;
-	default:
-		break;
+	}
+	if ((accion & right) != 0) {
+		rotateRight();
+	}
+	else if ((accion & left) != 0) {
+		rotateLeft();
 	}
 
 	if (correctUp) {
 		shipY += 0.05;
-		angleY+=anglespeed;
-		cameraAngleY-=anglespeed;
-		if(cameraAngleY<0){
-			cameraAngleY=0;
+		angleY += anglespeed;
+		cameraAngleY -= anglespeed;
+		if (cameraAngleY < 0) {
+			cameraAngleY = 0;
 		}
-		if(angleY>=0){
-			angleY=0;
+		if (angleY >= 0) {
+			angleY = 0;
 		}
 		if (shipY >= 0) {
 			shipY = 0;
-		}if(angleY==0 && shipY==0 && cameraAngleY==0){
-			correctUp=0;
+		}
+		if (angleY == 0 && shipY == 0 && cameraAngleY == 0) {
+			correctUp = 0;
 		}
 	} else if (correctDown) {
 		shipY -= 0.05;
-		angleY-=anglespeed;
-		cameraAngleY+=anglespeed;
-		if(cameraAngleY>0){
-			cameraAngleY=0;
+		angleY -= anglespeed;
+		cameraAngleY += anglespeed;
+		if (cameraAngleY > 0) {
+			cameraAngleY = 0;
 		}
-		if(angleY<=0){
-			angleY=0;
+		if (angleY <= 0) {
+			angleY = 0;
 		}
 		if (shipY <= 0) {
 			shipY = 0;
 		}
-		if(angleY==0 && shipY==0 && cameraAngleY==0){
-			correctDown=0;
+		if (angleY == 0 && shipY == 0 && cameraAngleY == 0) {
+			correctDown = 0;
 		}
 	}
 	if (correctRight) {
 		shipX -= 0.05;
 		angleZ += anglespeed;
-		cameraAngle+=anglespeed;
-		if(cameraAngle>0){
-			cameraAngle=0;
+		cameraAngle += anglespeed;
+		if (cameraAngle > 0) {
+			cameraAngle = 0;
 		}
 		if (shipX <= 0) {
 			shipX = 0;
@@ -295,15 +319,15 @@ static void display() {
 		if (angleZ >= 0) {
 			angleZ = 0;
 		}
-		if (shipX == 0 && angleZ == 0 &&cameraAngle==0) {
+		if (shipX == 0 && angleZ == 0 && cameraAngle == 0) {
 			correctRight = 0;
 		}
 	} else if (correctLeft) {
 		shipX += 0.05;
 		angleZ -= anglespeed;
-		cameraAngle-=anglespeed;
-		if(cameraAngle<0){
-			cameraAngle=0;
+		cameraAngle -= anglespeed;
+		if (cameraAngle < 0) {
+			cameraAngle = 0;
 		}
 		if (angleZ <= 0) {
 			angleZ = 0;
@@ -311,7 +335,7 @@ static void display() {
 		if (shipX >= 0) {
 			shipX = 0;
 		}
-		if (shipX == 0 && angleZ == 0 && cameraAngle==0) {
+		if (shipX == 0 && angleZ == 0 && cameraAngle == 0) {
 			correctLeft = 0;
 		}
 	}
@@ -352,7 +376,6 @@ static void display() {
 
 	drawAsteroids();
 
-
 	/*cylinder_draw(c2);
 	 cylinder_draw(c1);
 	 cylinder_draw(c3);*/
@@ -362,22 +385,30 @@ static void display() {
 
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
-	/*
-	 if(key==GLUT_KEY_RIGHT){
-	 }else if(key==GLUT_KEY_LEFT){
-	 }else if(key==GLUT_KEY_DOWN){
-	 }else if(key==GLUT_KEY_UP){
-	 }*/
+
+	if (key == GLUT_KEY_RIGHT) {
+		accion |= right;
+	} else if (key == GLUT_KEY_LEFT) {
+		accion |= left;
+	} else if (key == GLUT_KEY_DOWN) {
+		accion |= down;
+	} else if (key == GLUT_KEY_UP) {
+		accion |= up;
+	}
 }
 static void endMotionFunc(int key, int x, int y) {
-	if (key == GLUT_KEY_UP) {
+	if (key == GLUT_KEY_UP) { //arriba es  00000001
 		correctUp = 1;
-	} else if (key == GLUT_KEY_DOWN) {
+		accion &= 0XFE;
+	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
 		correctDown = 1;
-	} else if (key == GLUT_KEY_RIGHT) {
+		accion &= 0XFD;
+	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
 		correctRight = 1;
-	} else {
+		accion &= 0XFB;
+	} else { //izquierda es  00001000
 		correctLeft = 1;
+		accion &= 0XF7;
 	}
 
 	motion = 0;
