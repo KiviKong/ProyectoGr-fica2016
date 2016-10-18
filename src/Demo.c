@@ -24,9 +24,14 @@ static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 
+static float limiteInfY=-30;
+static float limiteSY=30;
+static float limiteIX=-30;
+static float limiteSX=30;
+
 static short s = 1;
 static int motion;
-static float speed = 0;
+static float speed = 5;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
@@ -154,11 +159,11 @@ static void rotateLeft() {
 	angleZ += anglespeed;
 	if (angleZ > 30)
 		angleZ = 30;
-	shipX -= 0.1;
+	shipX -= 0.05;
 	if (shipX < -1.7)
 		shipX = -1.7;
-	if (cameraAngle > 360) {
-		cameraAngle -= 360;
+	if (cameraAngle > 20) {
+		cameraAngle = 20;
 	}
 	correctLeft=0;
 }
@@ -169,31 +174,36 @@ static void rotateRight() {
 	angleZ -= anglespeed;
 	if (angleZ < -30)
 		angleZ = -30;
-	shipX += 0.1;
+	shipX += 0.05;
 	if (shipX > 1.7)
 		shipX = 1.7;
 
-	if (cameraAngle < 0) {
-		cameraAngle += 360;
+	if (cameraAngle < -20) {
+		cameraAngle =-20;
 	}
 	correctRight=0;
 }
 static void moveForward() {
 	cameraX -= sin((cameraAngle) * (M_PI / 180))
 			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
-	cameraZ -= cos((cameraAngle) * (M_PI / 180))
-			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
+	if(cameraX>limiteSX)cameraX=limiteSX;
+	if(cameraX<limiteIX)cameraX=limiteIX;
+
+	/*cameraZ -= cos((cameraAngle) * (M_PI / 180))
+			* (cos((cameraAngleY) * (M_PI / 180))) * speed;*/
 	cameraY += sin((cameraAngleY) * (M_PI / 180)) * speed;
+	if(cameraY>limiteSY)cameraY=limiteSY;
+	if(cameraY<limiteInfY)cameraY=limiteInfY;
 }
 
 static void moveUp() {
 	cameraAngleY += anglespeed;
-	if (cameraAngleY > 90)
-	 cameraAngleY = 90;
+	if (cameraAngleY > 20)
+	 cameraAngleY = 20;
 	angleY -= anglespeed;
 	if (angleY < -30)
 		angleY = -30;
-	shipY -= 0.1;
+	shipY -= 0.05;
 	if (shipY < -1.7)
 		shipY = -1.7;
 	correctUp=0;
@@ -203,11 +213,11 @@ static void moveDown() {
 	angleY += anglespeed;
 	if (angleY > 30)
 		angleY = 30;
-	shipY += 0.1;
+	shipY += 0.05;
 	if (shipY > 1.7)
 		shipY = 1.7;
-	if (cameraAngleY < -90)
-	 cameraAngleY = -90;
+	if (cameraAngleY < -20)
+	 cameraAngleY = -20;
 	correctDown=0;
 }
 
@@ -241,52 +251,67 @@ static void display() {
 	}
 
 	if (correctUp) {
-		shipY += 0.1;
+		shipY += 0.05;
 		angleY+=anglespeed;
+		cameraAngleY-=anglespeed;
+		if(cameraAngleY<0){
+			cameraAngleY=0;
+		}
 		if(angleY>=0){
 			angleY=0;
 		}
 		if (shipY >= 0) {
 			shipY = 0;
-		}if(angleY==0 && shipY==0){
+		}if(angleY==0 && shipY==0 && cameraAngleY==0){
 			correctUp=0;
 		}
 	} else if (correctDown) {
-		shipY -= 0.1;
+		shipY -= 0.05;
 		angleY-=anglespeed;
+		cameraAngleY+=anglespeed;
+		if(cameraAngleY>0){
+			cameraAngleY=0;
+		}
 		if(angleY<=0){
 			angleY=0;
 		}
 		if (shipY <= 0) {
 			shipY = 0;
 		}
-		if(angleY==0 && shipY==0){
+		if(angleY==0 && shipY==0 && cameraAngleY==0){
 			correctDown=0;
 		}
 	}
 	if (correctRight) {
-		shipX -= 0.1;
+		shipX -= 0.05;
 		angleZ += anglespeed;
+		cameraAngle+=anglespeed;
+		if(cameraAngle>0){
+			cameraAngle=0;
+		}
 		if (shipX <= 0) {
 			shipX = 0;
-			correctRight = 0;
 		}
 		if (angleZ >= 0) {
 			angleZ = 0;
 		}
-		if (shipX == 0 && angleZ == 0) {
-			correctLeft = 0;
+		if (shipX == 0 && angleZ == 0 &&cameraAngle==0) {
+			correctRight = 0;
 		}
 	} else if (correctLeft) {
-		shipX += 0.1;
+		shipX += 0.05;
 		angleZ -= anglespeed;
+		cameraAngle-=anglespeed;
+		if(cameraAngle<0){
+			cameraAngle=0;
+		}
 		if (angleZ <= 0) {
 			angleZ = 0;
 		}
 		if (shipX >= 0) {
 			shipX = 0;
 		}
-		if (shipX == 0 && angleZ == 0) {
+		if (shipX == 0 && angleZ == 0 && cameraAngle==0) {
 			correctLeft = 0;
 		}
 	}
