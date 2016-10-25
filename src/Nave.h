@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "Asteroids.h"
 
 
 #ifndef NAVE_H_
@@ -26,6 +27,8 @@ void nave_bind(Nave n, GLuint vLoc, GLuint cLoc);
 void nave_destroy(Nave);
 void nave_draw(Nave);
 void printarraynave(Nave);
+short checkCollision(float navemaxX,float naveminX,float navemaxY,float naveminY, float objectmaxX,float objectminX, float ObjectmaxY,float objectminY);
+
 
 
 #endif /* NAVE_H_ */

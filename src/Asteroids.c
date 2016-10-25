@@ -8,13 +8,16 @@
 #include "Asteroids.h"
 
 
-Asteroid Asteroid_create(double r, int lats, int longs, int feo){
+Asteroid Asteroid_create(float r, int lats, int longs, int feo){
 	Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
 	new->vertexNum = ((lats * 2) + 2) * longs * 3;
 	new->indexNum = (((lats * 2) + 2) * longs) * longs;
 	new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
 	new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
 	new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
+	new->lats=lats;
+	new->longs=longs;
+	new->r=r;
 
 	float colorR = 0.2;
 	float colorG = 0.2;
@@ -87,8 +90,8 @@ Asteroid Asteroid_create(double r, int lats, int longs, int feo){
 
 	      }
 	      new->speed =0;
-	      new->x = rand() % 100 +(-50);
-	      new->y = rand() % 100 +(-50);
+	      new->x = 0/*rand() % 100 +(-50)*/;
+	      new->y =0 /*rand() % 100 +(-50)*/;
 	      new->z = 0;
 		return new;
 

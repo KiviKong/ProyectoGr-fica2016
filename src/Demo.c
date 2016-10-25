@@ -7,24 +7,28 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <stdio.h>
 #include "Utils.h"
 #include "Transforms.h"
 #include <math.h>
+#include <time.h>
 #include "Cylinder.h"
 #include "Nave.h"
 #include "Asteroids.h"
 
-#define numAsteroids 100
+#define numAsteroids 1
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
 
-static Asteroid asteroids[numAsteroids];
+static Asteroid* asteroids;
 static int iterator;
 static Mat4 csMat;
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
+
+static int extra = 0;
 
 static float limiteInfY = -30;
 static float limiteSY = 30;
@@ -52,7 +56,7 @@ static float angleY = 0;
 
 static float cameraX = 0;
 static float cameraY = 0;
-static float cameraZ = 0;
+static float cameraZ = -1;
 static float angle = 0;
 static float cameraAngle = 0;
 static float anglespeed = 1;
@@ -61,13 +65,14 @@ static float cameraAngleY = 0;
 static float aspect;
 
 static void createAsteroids() {
+	asteroids = (Asteroid*) malloc(sizeof(Asteroid) * numAsteroids);
 	int i;
 	float randVel;
 	float randRadio;
 	float randFeo;
 	for (i = 0; i < numAsteroids; i++) {
-		randVel = rand() % 10;
-		randRadio = rand() % 10;
+		randVel = (rand() % 4) + 1;
+		randRadio = (rand() % 10) + 1;
 		randFeo = rand() % 2;
 		asteroids[i] = Asteroid_create(randRadio, 10, 10, randFeo);
 		setVelAsteroid(asteroids[i], randVel);
@@ -83,13 +88,46 @@ static void bindAsteroids() {
 }
 
 static void drawAsteroids() {
+	short collision = 0;
 	for (iterator = 0; iterator < numAsteroids; iterator++) {
-		mIdentity(&csMat);
-		translate(&csMat, asteroids[iterator]->x, asteroids[iterator]->y,
-				updateAsteroidZ(asteroids[iterator]));
-		rotateX(&csMat, angle + 50);
-		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
-		Asteroid_draw(asteroids[iterator]);
+		if (asteroids[iterator] != NULL) {
+			mIdentity(&csMat);
+			if ((asteroids[iterator]->z + asteroids[iterator]->speed)
+					< cameraZ + 1
+					&& (asteroids[iterator]->z + asteroids[iterator]->speed)
+							> cameraZ - 1 - asteroids[iterator]->speed) {
+				collision = checkCollision(cameraX + 1, cameraX - 1,
+						-cameraY + .8, -cameraY - .8,
+						asteroids[iterator]->x + asteroids[iterator]->r,
+						asteroids[iterator]->x - asteroids[iterator]->r,
+						asteroids[iterator]->y + asteroids[iterator]->r,
+						asteroids[iterator]->y - asteroids[iterator]->r);
+				if (collision == 1) {
+					extra++;
+					printf("%d ", extra);
+					printf(" %f, %f, %f, %f, %f, %f, %f, %f ", cameraX + 1,
+							cameraX - 1, -cameraY + .8, -cameraY - .8,
+							asteroids[iterator]->x + asteroids[iterator]->r,
+							asteroids[iterator]->x - asteroids[iterator]->r,
+							asteroids[iterator]->y + asteroids[iterator]->r,
+							asteroids[iterator]->y - asteroids[iterator]->r);
+				}
+
+			}
+			translate(&csMat, asteroids[iterator]->x, asteroids[iterator]->y,
+					updateAsteroidZ(asteroids[iterator]));
+
+			rotateX(&csMat, angle + 50);
+			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
+			if (collision == 1) {
+				Asteroid_destroy(asteroids[iterator]);
+				asteroids[iterator] = NULL;
+			}
+			if (asteroids[iterator] != NULL) {
+				Asteroid_draw(asteroids[iterator]);
+			}
+			collision = 0;
+		}
 	}
 
 }
@@ -239,6 +277,7 @@ static void moveBackwards() {
 }
 
 static void display() {
+
 	mIdentity(&csMat);
 	Mat4 view;
 	mIdentity(&view);
@@ -264,14 +303,12 @@ static void display() {
 	 }*/
 	if ((accion & up) != 0) {
 		moveUp();
-	}
-	else if ((accion & down) != 0) {
+	} else if ((accion & down) != 0) {
 		moveDown();
 	}
 	if ((accion & right) != 0) {
 		rotateRight();
-	}
-	else if ((accion & left) != 0) {
+	} else if ((accion & left) != 0) {
 		rotateLeft();
 	}
 
@@ -437,6 +474,8 @@ int main(int argc, char **argv) {
 	glutMainLoop();
 
 	destroyAsteroids();
+	nave_destroy(n1);
+	free(asteroids);
 	return 0;
 }
 

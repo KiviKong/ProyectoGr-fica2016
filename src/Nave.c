@@ -173,6 +173,7 @@ void nave_bind(Nave n,GLuint vLoc, GLuint cLoc){
 }
 
 void nave_destroy(Nave n){
+		free(n->indexBufferId);
 		free(n);
 }
 void nave_draw(Nave n){
@@ -190,5 +191,17 @@ void nave_draw(Nave n){
 }
 void printarraynave(Nave n){
 
+}
+short checkCollision(float navemaxX,float naveminX,float navemaxY,float naveminY, float objectmaxX,float objectminX, float objectmaxY,float objectminY){
+	if((objectmaxX>naveminX && objectmaxX<navemaxX)||(objectminX>naveminX && objectminX<navemaxX)){
+		if((objectmaxY>naveminY&& objectmaxY<navemaxY)||(objectminY>naveminY&& objectminY<navemaxY)){
+			return 1;
+		}
+	}else if((navemaxX>objectminX && navemaxX<objectmaxX)||(naveminX>objectminX && naveminX<objectmaxX)){
+		if((navemaxY>objectminY && navemaxY<objectmaxY)||(naveminY>objectminY && naveminY<objectmaxY)){
+			return 1;
+		}
+	}
+	return 0;
 }
 
