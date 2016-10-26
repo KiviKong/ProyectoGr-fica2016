@@ -90,8 +90,8 @@ Asteroid Asteroid_create(float r, int lats, int longs, int feo){
 
 	      }
 	      new->speed =0;
-	      new->x = 0/*rand() % 100 +(-50)*/;
-	      new->y =0 /*rand() % 100 +(-50)*/;
+	      new->x = rand() % 100 +(-50);
+	      new->y =rand() % 100 +(-50);
 	      new->z = 0;
 		return new;
 

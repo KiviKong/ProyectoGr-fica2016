@@ -16,7 +16,7 @@
 #include "Nave.h"
 #include "Asteroids.h"
 
-#define numAsteroids 1
+#define numAsteroids 100
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
@@ -30,10 +30,10 @@ static Mat4 shipMat;
 
 static int extra = 0;
 
-static float limiteInfY = -30;
-static float limiteSY = 30;
-static float limiteIX = -30;
-static float limiteSX = 30;
+static float limiteInfY = -80;
+static float limiteSY = 80;
+static float limiteIX = -80;
+static float limiteSX = 80;
 
 static short up = 0x01;
 static short down = 0x02;
@@ -43,7 +43,7 @@ static short right = 0x04;
 static short accion = 0;
 static short s = 1;
 static int motion;
-static float speed = 5;
+static float speed = 10;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
@@ -93,9 +93,9 @@ static void drawAsteroids() {
 		if (asteroids[iterator] != NULL) {
 			mIdentity(&csMat);
 			if ((asteroids[iterator]->z + asteroids[iterator]->speed)
-					< cameraZ + 1
+					< cameraZ + 1 - 7
 					&& (asteroids[iterator]->z + asteroids[iterator]->speed)
-							> cameraZ - 1 - asteroids[iterator]->speed) {
+							> cameraZ - 1 - asteroids[iterator]->speed - 7) {
 				collision = checkCollision(cameraX + 1, cameraX - 1,
 						-cameraY + .8, -cameraY - .8,
 						asteroids[iterator]->x + asteroids[iterator]->r,
@@ -211,6 +211,14 @@ static void rotateLeft() {
 	if (cameraAngle > 20) {
 		cameraAngle = 20;
 	}
+	if(shipX+cameraX<limiteIX){
+		cameraAngle-=anglespeed*2;
+		if(cameraAngle<0)cameraAngle=0;
+		shipX+=0.10;
+		if(shipX>0)shipX=0;
+		angleZ-=anglespeed*2;
+		if(angleZ<0)angleZ=0;
+	}
 	correctLeft = 0;
 }
 static void rotateRight() {
@@ -226,6 +234,14 @@ static void rotateRight() {
 
 	if (cameraAngle < -20) {
 		cameraAngle = -20;
+	}
+	if(shipX+cameraX>limiteSX){
+		cameraAngle+=anglespeed*2;
+		if(cameraAngle>0)cameraAngle=0;
+		shipX-=0.10;
+		if(shipX<0)shipX=0;
+		angleZ+=anglespeed*2;
+		if(angleZ>0)angleZ=0;
 	}
 	correctRight = 0;
 }
@@ -256,6 +272,15 @@ static void moveUp() {
 	shipY -= 0.05;
 	if (shipY < -1.7)
 		shipY = -1.7;
+	if (shipY - cameraY < limiteInfY) {
+		cameraAngleY-=anglespeed*2;
+		if(cameraAngleY<0)cameraAngleY=0;
+		shipY += 0.1;
+		if(shipY>0)shipY=0;
+		angleY += anglespeed * 2;
+		if(angleY>0)angleY=0;
+	}
+
 	correctUp = 0;
 }
 static void moveDown() {
@@ -268,6 +293,15 @@ static void moveDown() {
 		shipY = 1.7;
 	if (cameraAngleY < -20)
 		cameraAngleY = -20;
+	if (shipY - cameraY > limiteSY) {
+		cameraAngleY+=anglespeed*2;
+		if(cameraAngleY>0)cameraAngleY=0;
+		shipY -= 0.1;
+		if(shipY<0)shipY=0;
+		angleY -= anglespeed * 2;
+		if(angleY<0)angleY=0;
+	}
+
 	correctDown = 0;
 }
 
@@ -313,6 +347,7 @@ static void display() {
 	}
 
 	if (correctUp) {
+		cameraY -= 0.05;
 		shipY += 0.05;
 		angleY += anglespeed;
 		cameraAngleY -= anglespeed;
@@ -324,11 +359,13 @@ static void display() {
 		}
 		if (shipY >= 0) {
 			shipY = 0;
+			cameraY += 0.05;
 		}
 		if (angleY == 0 && shipY == 0 && cameraAngleY == 0) {
 			correctUp = 0;
 		}
 	} else if (correctDown) {
+		cameraY += 0.05;
 		shipY -= 0.05;
 		angleY -= anglespeed;
 		cameraAngleY += anglespeed;
@@ -340,12 +377,14 @@ static void display() {
 		}
 		if (shipY <= 0) {
 			shipY = 0;
+			cameraY -= 0.05;
 		}
 		if (angleY == 0 && shipY == 0 && cameraAngleY == 0) {
 			correctDown = 0;
 		}
 	}
 	if (correctRight) {
+		cameraX += 0.05;
 		shipX -= 0.05;
 		angleZ += anglespeed;
 		cameraAngle += anglespeed;
@@ -354,6 +393,7 @@ static void display() {
 		}
 		if (shipX <= 0) {
 			shipX = 0;
+			cameraX -= 0.05;
 		}
 		if (angleZ >= 0) {
 			angleZ = 0;
@@ -362,6 +402,7 @@ static void display() {
 			correctRight = 0;
 		}
 	} else if (correctLeft) {
+		cameraX -= 0.05;
 		shipX += 0.05;
 		angleZ -= anglespeed;
 		cameraAngle -= anglespeed;
@@ -373,6 +414,7 @@ static void display() {
 		}
 		if (shipX >= 0) {
 			shipX = 0;
+			cameraX += 0.05;
 		}
 		if (shipX == 0 && angleZ == 0 && cameraAngle == 0) {
 			correctLeft = 0;
@@ -425,27 +467,31 @@ static void display() {
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
 
-	if (key == GLUT_KEY_RIGHT) {
+	if (key == GLUT_KEY_RIGHT &&(accion&left)!=left) {
 		accion |= right;
 	} else if (key == GLUT_KEY_LEFT) {
 		accion |= left;
 	} else if (key == GLUT_KEY_DOWN) {
 		accion |= down;
-	} else if (key == GLUT_KEY_UP) {
+	} else if (key == GLUT_KEY_UP&&(accion&down)!=down) {
 		accion |= up;
 	}
 }
 static void endMotionFunc(int key, int x, int y) {
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
+		if((accion&down)!=down)
 		correctUp = 1;
 		accion &= 0XFE;
 	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
+		if((accion&up)!=up)
 		correctDown = 1;
 		accion &= 0XFD;
 	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
+		if((accion&left)!=left)
 		correctRight = 1;
 		accion &= 0XFB;
 	} else { //izquierda es  00001000
+		if((accion&right)!=right)
 		correctLeft = 1;
 		accion &= 0XF7;
 	}
