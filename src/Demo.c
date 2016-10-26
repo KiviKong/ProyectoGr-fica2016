@@ -43,7 +43,7 @@ static short right = 0x04;
 static short accion = 0;
 static short s = 1;
 static int motion;
-static float speed = 10;
+static float speed = 7;
 static bool correctUp = 0;
 static bool correctDown = 0;
 static bool correctRight = 0;
@@ -96,8 +96,8 @@ static void drawAsteroids() {
 					< cameraZ + 1 - 7
 					&& (asteroids[iterator]->z + asteroids[iterator]->speed)
 							> cameraZ - 1 - asteroids[iterator]->speed - 7) {
-				collision = checkCollision(cameraX + 1, cameraX - 1,
-						-cameraY + .8, -cameraY - .8,
+				collision = checkCollision(cameraX+shipX + 1, cameraX+shipX - 1,
+						-cameraY-shipY + .8, -cameraY-shipY - .8,
 						asteroids[iterator]->x + asteroids[iterator]->r,
 						asteroids[iterator]->x - asteroids[iterator]->r,
 						asteroids[iterator]->y + asteroids[iterator]->r,
