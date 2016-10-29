@@ -479,19 +479,19 @@ static void startMotionFunc(int key, int x, int y) {
 }
 static void endMotionFunc(int key, int x, int y) {
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
-		if((accion&down)!=down)
+		if(correctDown!=1)
 		correctUp = 1;
 		accion &= 0XFE;
 	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
-		if((accion&up)!=up)
+		if(correctUp!=1)
 		correctDown = 1;
 		accion &= 0XFD;
 	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
-		if((accion&left)!=left)
+		if(correctLeft!=1)
 		correctRight = 1;
 		accion &= 0XFB;
 	} else { //izquierda es  00001000
-		if((accion&right)!=right)
+		if(correctRight!=1)
 		correctLeft = 1;
 		accion &= 0XF7;
 	}
