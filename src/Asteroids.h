@@ -30,6 +30,7 @@ struct strAsteroid {
 };
 typedef struct strAsteroid* Asteroid;
 Asteroid Asteroid_create(float r, int lats, int longs, int feo);
+Asteroid create_asteroid2(float radius, int P, int M);
 void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc);
 void Asteroid_destroy(Asteroid);
 void Asteroid_draw(Asteroid);

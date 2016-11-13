@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include "Asteroids.h"
 
+#define rock 0
+
 Asteroid Asteroid_create(float r, int lats, int longs, int feo) {
 	Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
 	new->vertexNum = ((lats * 2) + 2) * longs * 3;
@@ -105,6 +107,95 @@ Asteroid Asteroid_create(float r, int lats, int longs, int feo) {
 	return new;
 
 }
+
+Asteroid create_asteroid2(float radius, int P, int M){
+	Asteroid new = (Asteroid) malloc(sizeof(struct strAsteroid));
+		new->vertexNum = (P + 1) * M*3;
+		new->indexNum = 2 * P * M + 3 * P;
+		new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
+		new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
+		new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
+		new->lats = P;
+		new->longs = M;
+		new->r = radius;
+
+		float colorR = 0.5;
+		float colorG = 0.5;
+		float colorB = 0.7;
+		float random1;
+
+	GLfloat phi = 0;
+		GLfloat inc_phi = M_PI / P;
+		GLfloat theta = 0;
+		/*sphereVertexCount = (P + 1) * M;
+		spherePos   = (GLfloat*) malloc(sizeof(GLfloat) * 3 * sphereVertexCount);
+		sphereCol   = (GLfloat*) malloc(sizeof(GLfloat) * 3 * sphereVertexCount);
+		sphereTex   = (GLfloat*) malloc(sizeof(GLfloat) * 2 * sphereVertexCount);*/
+
+		setbuf(stdout, 0);
+		float ruido;
+
+	//	Fórmulas de Bessel
+		GLfloat inc_theta = 2 * M_PI / M;
+		int i = 0, j = 0, p, m;
+		for(p = 1; p <= P + 1; p ++) {
+			theta = 0;
+			for(m = 1; m <= M; m ++) {
+				random1 = (((rand() % 2) + 9) / 10.0);
+				ruido = rand() % 5;
+						ruido /= 100.0;
+						ruido = 1 - ruido;
+				GLfloat x = sin(phi) * cos(theta);
+				GLfloat y = sin(phi) * sin(theta);
+				GLfloat z = cos(phi);
+
+				new->vertexPos[i    ] = radius * x*random1;
+				new->vertexPos[i + 1] = radius * y*random1;
+				new->vertexPos[i + 2] = radius * z*random1;
+
+				new->vertexCol[i    ] = (colorR) * ruido;
+				new->vertexCol[i + 1] = (colorG) * ruido;
+				new->vertexCol[i + 2] = (colorB) * ruido;
+
+	//			Mapeo de coordenadas esféricas a plano
+				/*sphereTex[j    ] = 0.5 + atan2(z, x) / (2 * M_PI);  // atan2(z, x) = arcotangente(z / x)
+				sphereTex[j + 1] = 0.5 - asin(y) / M_PI;
+
+				if(sphereTex[j]     > 0.5) sphereTex[j] = 1 - sphereTex[j];
+				if(sphereTex[j + 1] > 0.5) sphereTex[j + 1] = 1 - sphereTex[j + 1];
+				sphereTex[j]     *= 4;
+				sphereTex[j + 1] *= 4;*/
+
+				i += 3;
+				//j += 2;
+				theta += inc_theta;
+			}
+			phi += inc_phi;
+		}
+
+
+
+
+		GLushort v = 0, k = 0;
+		for(p = 1; p <= P; p ++) {
+			int firstV = v;
+			for(m = 1; m <= M; m ++) {
+				new->AsteroidIndex[k ++] = v;
+				new->AsteroidIndex[k ++] = v + M;
+				v ++;
+			}
+			new->AsteroidIndex[k ++] = firstV;
+			new->AsteroidIndex[k ++] = firstV + M;
+			new->AsteroidIndex[k ++] = 0xFFFF;
+		}
+		new->speed = 0;
+			new->x = rand() % 100 + (-50);
+			new->y = rand() % 100 + (-50);
+			new->z = -(rand() % 1000)-1000;
+
+		return new;
+}
+
 void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc) {
 	glGenVertexArrays(1, &a->vertexId);
 	a->indexBufferId = (GLuint*) malloc(3 * sizeof(GLuint));
@@ -150,7 +241,7 @@ void Asteroid_draw(Asteroid a) {
 float updateAsteroidZ(Asteroid a) {
 
 	if (a->z == 0)
-		return a->z = -500;
+		return a->z = -2000;
 	else
 		return a->z += a->speed;
 }

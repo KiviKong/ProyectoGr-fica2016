@@ -71,11 +71,13 @@ static void createAsteroids() {
 	float randRadio;
 	float randFeo;
 	for (i = 0; i < numAsteroids; i++) {
-		randVel = (rand() % 4) + 1;
+		randVel = (rand() % 5) + 2;
 		randRadio = (rand() % 10) + 1;
 		randFeo = rand() % 2;
-		asteroids[i] = Asteroid_create(randRadio, 10, 10, randFeo);
+		asteroids[i]=create_asteroid2(randRadio,20,20);
+		//asteroids[i] = Asteroid_create(randRadio, 10, 15, randFeo);
 		setVelAsteroid(asteroids[i], randVel);
+
 	}
 
 }
@@ -188,7 +190,7 @@ static void createShape() {
 
 static void reshapeFunc(int width, int height) {
 	aspect = (float) width / height;
-	setPerspective(&projMat, 53, aspect, -1, -500);
+	setPerspective(&projMat, 53, aspect, -1, -2000);
 	/*
 	 if (width > height)
 	 setOrtho(&projMat, -3 * aspect, 3 * aspect, -3, 3, -3, 3);
@@ -469,9 +471,9 @@ static void startMotionFunc(int key, int x, int y) {
 
 	if (key == GLUT_KEY_RIGHT &&(accion&left)!=left) {
 		accion |= right;
-	} else if (key == GLUT_KEY_LEFT) {
+	} else if (key == GLUT_KEY_LEFT &&(accion&right)!=right) {
 		accion |= left;
-	} else if (key == GLUT_KEY_DOWN) {
+	} else if (key == GLUT_KEY_DOWN&&(accion&up)!=up) {
 		accion |= down;
 	} else if (key == GLUT_KEY_UP&&(accion&down)!=down) {
 		accion |= up;
@@ -479,19 +481,19 @@ static void startMotionFunc(int key, int x, int y) {
 }
 static void endMotionFunc(int key, int x, int y) {
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
-		if(correctDown!=1)
+		if(correctDown!=1&&(accion&down)!=down)
 		correctUp = 1;
 		accion &= 0XFE;
 	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
-		if(correctUp!=1)
+		if(correctUp!=1&&(accion&up)!=up)
 		correctDown = 1;
 		accion &= 0XFD;
 	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
-		if(correctLeft!=1)
+		if(correctLeft!=1&&(accion&left)!=left)
 		correctRight = 1;
 		accion &= 0XFB;
 	} else { //izquierda es  00001000
-		if(correctRight!=1)
+		if(correctRight!=1&&(accion&right)!=right)
 		correctLeft = 1;
 		accion &= 0XF7;
 	}
