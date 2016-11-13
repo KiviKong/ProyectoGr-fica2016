@@ -499,6 +499,7 @@ static void endMotionFunc(int key, int x, int y) {
 	motion = 0;
 }
 int main(int argc, char **argv) {
+	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE);
 	glutInitWindowSize(600, 600);
