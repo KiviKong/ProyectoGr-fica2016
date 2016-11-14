@@ -1,1 +1,1 @@
-"# ProyectoGr-fica2016" 
+Proyecto Gráfica 2016

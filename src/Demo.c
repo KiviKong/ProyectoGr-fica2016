@@ -15,6 +15,7 @@
 #include "Cylinder.h"
 #include "Nave.h"
 #include "Asteroids.h"
+#include "Background.h"
 
 #define numAsteroids 100
 
@@ -22,6 +23,7 @@ static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
 
 static Asteroid* asteroids;
+static Background background;
 static int iterator;
 static Mat4 csMat;
 static Nave n1;
@@ -64,6 +66,9 @@ static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 static float aspect;
 
+// =================================== //
+// 				ASTEROIDS			   //
+// =================================== //
 static void createAsteroids() {
 	asteroids = (Asteroid*) malloc(sizeof(Asteroid) * numAsteroids);
 	int i;
@@ -133,6 +138,7 @@ static void drawAsteroids() {
 	}
 
 }
+
 static void destroyAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
@@ -140,6 +146,27 @@ static void destroyAsteroids() {
 
 	}
 }
+
+
+// =================================== //
+// 				SCREEN				   //
+// =================================== //
+
+static void createBackground() {
+	background = BackgroundCreate(
+		-80, // minX
+		80,  // maxX
+		-80, // minY
+		80,  // maxY
+		80	 // depth
+	);
+	BackgroundBind(background, vertexPosLoc, vertexColLoc);
+}
+
+
+// =================================== //
+// 				SCREEN				   //
+// =================================== //
 
 static void initShaders() {
 	GLuint vShader = compileShader("shaders/projMatrix.vsh", GL_VERTEX_SHADER);
@@ -178,13 +205,12 @@ static void timerFunc(int id) {
 
 static void createShape() {
 
+	createBackground();
 	createAsteroids();
 	bindAsteroids();
 
 	n1 = nave_create();
 	nave_bind(n1, vertexPosLoc, vertexColLoc);
-
-	//printarray(c1);
 
 }
 
@@ -199,6 +225,11 @@ static void reshapeFunc(int width, int height) {
 
 	glViewport(0, 0, width, height);
 }
+
+
+// =================================== //
+// 				MOVEMENT			   //
+// =================================== //
 
 static void rotateLeft() {
 	cameraAngle += anglespeed;
@@ -223,6 +254,7 @@ static void rotateLeft() {
 	}
 	correctLeft = 0;
 }
+
 static void rotateRight() {
 	cameraAngle -= anglespeed;
 	/*if (cameraAngle < -60*s)
@@ -247,6 +279,7 @@ static void rotateRight() {
 	}
 	correctRight = 0;
 }
+
 static void moveForward() {
 	cameraX -= sin((cameraAngle) * (M_PI / 180))
 			* (cos((cameraAngleY) * (M_PI / 180))) * speed;
@@ -285,6 +318,7 @@ static void moveUp() {
 
 	correctUp = 0;
 }
+
 static void moveDown() {
 	cameraAngleY -= anglespeed;
 	angleY += anglespeed;
@@ -311,6 +345,11 @@ static void moveBackwards() {
 	cameraX += sin((cameraAngle) * (M_PI / 180)) * speed;
 	cameraZ += cos((cameraAngle) * (M_PI / 180)) * speed;
 }
+
+
+// =================================== //
+// 				SCREEN				   //
+// =================================== //
 
 static void display() {
 
@@ -452,17 +491,10 @@ static void display() {
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 
-	/*cylinder_draw(c1);
-	 cylinder_draw(c2);
-	 cylinder_draw(c3);*/
 	nave_draw(n1);
-
 	drawAsteroids();
+	BackgroundDraw(background);
 
-	/*cylinder_draw(c2);
-	 cylinder_draw(c1);
-	 cylinder_draw(c3);*/
-	//nave_draw(n1);
 	glutSwapBuffers();
 }
 
@@ -479,6 +511,7 @@ static void startMotionFunc(int key, int x, int y) {
 		accion |= up;
 	}
 }
+
 static void endMotionFunc(int key, int x, int y) {
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
 		if(correctDown!=1&&(accion&down)!=down)
@@ -500,7 +533,14 @@ static void endMotionFunc(int key, int x, int y) {
 
 	motion = 0;
 }
+
+
+// =================================== //
+// 				MAIN				   //
+// =================================== //
+
 int main(int argc, char **argv) {
+	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE);
 	glutInitWindowSize(600, 600);
@@ -526,4 +566,3 @@ int main(int argc, char **argv) {
 	free(asteroids);
 	return 0;
 }
-

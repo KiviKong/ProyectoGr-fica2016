@@ -1,6 +1,6 @@
-/.settings
-/Debug
-/Release
-/.cproject
-/.README.md
-/.project
+.settings
+Debug
+Release
+.cproject
+.project
+*.o
