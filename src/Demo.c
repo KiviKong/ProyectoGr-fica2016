@@ -158,7 +158,7 @@ static void createBackground() {
 		80,  // maxX
 		-80, // minY
 		80,  // maxY
-		80	 // depth
+		-1000	 // depth
 	);
 	BackgroundBind(background, vertexPosLoc, vertexColLoc);
 }
@@ -493,6 +493,11 @@ static void display() {
 
 	nave_draw(n1);
 	drawAsteroids();
+	Mat4 identity;
+	mIdentity(&identity);
+	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE,identity.values);
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 	BackgroundDraw(background);
 
 	glutSwapBuffers();

@@ -4,15 +4,17 @@
  *  Created on: 15/10/2016
  *      Author: kevin
  */
+
+
+#ifndef ASTEROIDS_H_
+#define ASTEROIDS_H_
+
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "Utils.h"
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-
-#ifndef ASTEROIDS_H_
-#define ASTEROIDS_H_
 
 struct strAsteroid {
 	float (*vertexPos);
