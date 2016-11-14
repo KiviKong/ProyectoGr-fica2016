@@ -21,7 +21,7 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
     bg->vertexPos[11] = depth;
     int i = 0;
     for(i = 0; i < 12; i++) {
-        bg->vertexCol[i] = 1.0;
+        bg->vertexCol[i] = 0.5;
     }
     for (i = 0; i < 4; i++) {
         bg->indexArr[i] = i;
@@ -31,14 +31,14 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
 
 void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc) {
     glGenVertexArrays(1, &b->vertexId);
-    b->bufferId = (GLuint*) malloc(2 * sizeof(GLuint));
+    b->bufferId = (GLuint*) malloc(3 * sizeof(GLuint));
     glGenBuffers(3, b->bufferId);
 
     glBindVertexArray(b->vertexId);
     glBindBuffer(GL_ARRAY_BUFFER, b->bufferId[0]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        (4 * sizeof(float)),
+        (12 * sizeof(float)),
         b->vertexPos,
         GL_STATIC_DRAW
     );
@@ -48,7 +48,7 @@ void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc) {
     glBindBuffer(GL_ARRAY_BUFFER, b->bufferId[1]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        (4 * sizeof(float)),
+        (12 * sizeof(float)),
         b->vertexCol,
         GL_STATIC_DRAW
     );
