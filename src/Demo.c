@@ -217,11 +217,6 @@ static void createShape() {
 static void reshapeFunc(int width, int height) {
 	aspect = (float) width / height;
 	setPerspective(&projMat, 53, aspect, -1, -2000);
-	/*
-	 if (width > height)
-	 setOrtho(&projMat, -3 * aspect, 3 * aspect, -3, 3, -3, 3);
-	 else
-	 setOrtho(&projMat, -3, 3, -3 / aspect, 3 / aspect, -3, 3);*/
 
 	glViewport(0, 0, width, height);
 }
@@ -341,11 +336,6 @@ static void moveDown() {
 	correctDown = 0;
 }
 
-static void moveBackwards() {
-	cameraX += sin((cameraAngle) * (M_PI / 180)) * speed;
-	cameraZ += cos((cameraAngle) * (M_PI / 180)) * speed;
-}
-
 
 // =================================== //
 // 				SCREEN				   //
@@ -357,25 +347,7 @@ static void display() {
 	Mat4 view;
 	mIdentity(&view);
 	mIdentity(&shipMat);
-	/*
-	 switch (motion) {
-	 case 1:
-	 break;
-	 case GLUT_KEY_RIGHT:
-	 rotateRight();
-	 break;
-	 case GLUT_KEY_LEFT:
-	 rotateLeft();
-	 break;
-	 case GLUT_KEY_UP:
-	 moveUp();
-	 break;
-	 case GLUT_KEY_DOWN:
-	 moveDown();
-	 break;
-	 default:
-	 break;
-	 }*/
+
 	if ((accion & up) != 0) {
 		moveUp();
 	} else if ((accion & down) != 0) {
@@ -461,6 +433,7 @@ static void display() {
 			correctLeft = 0;
 		}
 	}
+
 	moveForward();
 	rotateX(&view, cameraAngleY);
 	rotateY(&view, -cameraAngle);
@@ -481,7 +454,7 @@ static void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	translate(&csMat, -3, 0, -9);
-	//rotateX(&csMat,90);
+
 	if (angle == 360)
 		angle = 0;
 	rotateY(&csMat, angle++);
