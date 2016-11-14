@@ -18,6 +18,9 @@
 #include "Background.h"
 
 #define numAsteroids 100
+#define maxDepth (-2000)
+
+#define to_rads(a) (180 * a / M_PI)
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc;
@@ -153,11 +156,12 @@ static void destroyAsteroids() {
 // =================================== //
 
 static void createBackground() {
+	GLfloat max = -maxDepth * tan(to_rads(53/2));
 	background = BackgroundCreate(
-		-80, // minX
-		80,  // maxX
-		-80, // minY
-		80,  // maxY
+		-max, // minX
+		max,  // maxX
+		-max, // minY
+		max,  // maxY
 		-1000	 // depth
 	);
 	BackgroundBind(background, vertexPosLoc, vertexColLoc);
@@ -216,7 +220,7 @@ static void createShape() {
 
 static void reshapeFunc(int width, int height) {
 	aspect = (float) width / height;
-	setPerspective(&projMat, 53, aspect, -1, -2000);
+	setPerspective(&projMat, 53, aspect, -1, maxDepth);
 
 	glViewport(0, 0, width, height);
 }
