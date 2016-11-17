@@ -2,7 +2,7 @@
  * Utils.h
  *
  *  Created on: 16/01/2014
- *      Author: Iván
+ *      Author: Ivï¿½n
  */
 
 #ifndef UTILS_H_
@@ -16,5 +16,6 @@ const char* loadShader(const char* filename);
 GLuint compileShader(const char* filename, GLuint shaderType);
 bool shaderCompiled(GLuint shaderId);
 bool loadBMP(const char* filename, unsigned char **pdata, unsigned int *width, unsigned int *height);
+void loadTexture(const char* filename, GLuint texId);
 
 #endif /* UTILS_H_ */

@@ -2,7 +2,7 @@
  * Utils.c
  *
  *  Created on: 16/01/2014
- *      Author: Iván
+ *      Author: Ivï¿½n
  */
 
 #include "Utils.h"
@@ -39,7 +39,6 @@ const char* loadShader(const char* filename) {
 }
 
 GLuint compileShader(const char* filename, GLuint shaderType) {
-//	char const* source = "void main() { ... ";
 	char const* source = loadShader(filename);
 	GLuint shaderId = glCreateShader(shaderType);
 	glShaderSource(shaderId, 1, &source, NULL);
@@ -78,4 +77,17 @@ bool loadBMP(const char* filename, unsigned char **pdata, unsigned int *width, u
     fread(*pdata, 1, (*width) * (*height) * 3, file);
     fclose(file);
     return true;
+}
+
+void loadTexture(const char* filename, GLuint texId) {
+	unsigned char *data = NULL;
+	unsigned int width = 0, height = 0;
+	if(!loadBMP(filename, &data, &width, &height)) return;
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	free(data);
 }

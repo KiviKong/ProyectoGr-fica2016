@@ -22,8 +22,9 @@
 
 #define to_rads(a) (180 * a / M_PI)
 
-static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
-		projMatrixLoc, viewMatrixLoc;
+static GLuint programId, bgProgram, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
+		projMatrixLoc, viewMatrixLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
+		projMatrixLocBG, viewMatrixLocBG, textureLoc;
 
 static Asteroid* asteroids;
 static Background background;
@@ -156,15 +157,16 @@ static void destroyAsteroids() {
 // =================================== //
 
 static void createBackground() {
-	GLfloat max = -maxDepth * tan(to_rads(53/2));
+	GLfloat maxY = -maxDepth * tan(to_rads(53/2));
+	GLfloat maxX = maxY * aspect;
 	background = BackgroundCreate(
-		-max, // minX
-		max,  // maxX
-		-max, // minY
-		max,  // maxY
-		-1000	 // depth
+		-maxX, // minX
+		maxX,  // maxX
+		-maxY, // minY
+		maxY,  // maxY
+		-500	 // depth
 	);
-	BackgroundBind(background, vertexPosLoc, vertexColLoc);
+	BackgroundBind(background, vertexPosLocBG, vertexColLocBG, textureLoc);
 }
 
 
@@ -189,6 +191,22 @@ static void initShaders() {
 	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
 	projMatrixLoc = glGetUniformLocation(programId, "projMatrix");
 	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
+
+
+	GLuint bgShader = compileShader("shaders/bg.fsh", GL_FRAGMENT_SHADER);
+	if (!shaderCompiled(bgShader))
+		return;
+
+	bgProgram = glCreateProgram();
+	glAttachShader(bgProgram, vShader);
+	glAttachShader(bgProgram, bgShader);
+	glLinkProgram(bgProgram);
+	vertexPosLocBG = glGetAttribLocation(bgProgram, "vertexPosition");
+	vertexColLocBG = glGetAttribLocation(bgProgram, "vertexColor");
+	modelMatrixLocBG = glGetUniformLocation(bgProgram, "modelMatrix");
+	projMatrixLocBG = glGetUniformLocation(bgProgram, "projMatrix");
+	viewMatrixLocBG = glGetUniformLocation(bgProgram, "viewMatrix");
+	textureLoc = glGetUniformLocation(bgProgram, "texCoord");
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
@@ -457,12 +475,15 @@ static void display() {
 	rotateX(&shipMat, angleY);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 	translate(&csMat, -3, 0, -9);
 
 	if (angle == 360)
 		angle = 0;
 	rotateY(&csMat, angle++);
 	rotateX(&csMat, angle);
+
+
 	glUseProgram(programId);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
@@ -470,12 +491,15 @@ static void display() {
 
 	nave_draw(n1);
 	drawAsteroids();
+
 	Mat4 identity;
 	mIdentity(&identity);
-	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE,identity.values);
-	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
+	glUseProgram(bgProgram);
+	glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
+	glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,identity.values);
+	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, view.values);
 	BackgroundDraw(background);
+
 
 	glutSwapBuffers();
 }

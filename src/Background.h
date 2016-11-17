@@ -14,12 +14,15 @@ struct strBg {
     GLuint indexArr[4];
     GLuint vertexId;
     GLuint* bufferId;
+    GLuint texture[1];
+    GLfloat textureArr[8];
 };
 
 typedef struct strBg* Background;
 
 Background BackgroundCreate(float minX, float maxX, float minY, float maxY, float depth);
-void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc);
+void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc);
+void BackgroundBindTextures(Background b);
 void BackgroundDraw(Background b);
 void BackgroundDestroy(Background b);
 
