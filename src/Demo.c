@@ -157,14 +157,14 @@ static void destroyAsteroids() {
 // =================================== //
 
 static void createBackground() {
-	GLfloat maxY = -maxDepth * tan(to_rads(53/2));
-	GLfloat maxX = maxY * aspect;
+	GLfloat max = -maxDepth * tan(to_rads(53/2));
+	printf("%f\n", max);
 	background = BackgroundCreate(
-		-maxX, // minX
-		maxX,  // maxX
-		-maxY, // minY
-		maxY,  // maxY
-		-500	 // depth
+		-max, // minX
+		max,  // maxX
+		-max, // minY
+		max,  // maxY
+		-1999	 // depth
 	);
 	BackgroundBind(background, vertexPosLocBG, vertexColLocBG, textureLoc);
 }
@@ -484,6 +484,15 @@ static void display() {
 	rotateX(&csMat, angle);
 
 
+	Mat4 identity;
+	mIdentity(&identity);
+	glUseProgram(bgProgram);
+	glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
+	glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,identity.values);
+	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, identity.values);
+	glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
+	BackgroundDraw(background);
+
 	glUseProgram(programId);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
@@ -491,15 +500,6 @@ static void display() {
 
 	nave_draw(n1);
 	drawAsteroids();
-
-	Mat4 identity;
-	mIdentity(&identity);
-	glUseProgram(bgProgram);
-	glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
-	glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,identity.values);
-	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, view.values);
-	BackgroundDraw(background);
-
 
 	glutSwapBuffers();
 }
@@ -562,9 +562,6 @@ int main(int argc, char **argv) {
 	glewInit();
 	initShaders();
 	createShape();
-	//printf("%f",c1->vertexPos);
-	//display();
-	glClearColor(0.00, 0.00, 0.00, 0.0);
 	glutMainLoop();
 
 	destroyAsteroids();

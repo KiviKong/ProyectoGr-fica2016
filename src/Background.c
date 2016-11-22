@@ -89,23 +89,24 @@ void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc) {
     glEnableVertexAttribArray(tLoc);
 
 	glGenTextures(1, b->texture);
-    loadTexture("textures/space-bg.bmp", b->texture[0]);
+    loadTexture("textures/ast.bmp", b->texture[0]);
 };
 
 
 void BackgroundDraw(Background b){
     glBindVertexArray(b->vertexId);
-    // glBindBuffer(
-    //     GL_ELEMENT_ARRAY_BUFFER,
-    //     b->bufferId[3]
-    // );
+    glBindBuffer(
+        GL_ARRAY_BUFFER,
+        b->bufferId[2]
+    );
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, b->texture[0]);
-    // glDrawElements(
-    //     GL_TRIANGLE_STRIP,
-    //     4,
-    //     GL_UNSIGNED_INT,
-    //     0
-    // );
+    glDrawElements(
+        GL_TRIANGLE_STRIP,
+        4,
+        GL_UNSIGNED_INT,
+        0
+    );
 };
 
 void BackgroundDestroy(Background b) {

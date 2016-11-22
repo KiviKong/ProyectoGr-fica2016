@@ -11,7 +11,7 @@ out vec3 vertexColorVF;
 out vec2 texCoordVF;
 
 void main(){
-	vertexColorVF=vertexColor;
+	vertexColorVF = vertexColor;
 	texCoordVF = texCoord;
 	gl_Position = projMatrix*viewMatrix* modelMatrix * vec4(vertexPosition,1);
 }

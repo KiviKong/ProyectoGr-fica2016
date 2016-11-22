@@ -82,9 +82,10 @@ bool loadBMP(const char* filename, unsigned char **pdata, unsigned int *width, u
 void loadTexture(const char* filename, GLuint texId) {
 	unsigned char *data = NULL;
 	unsigned int width = 0, height = 0;
-	if(!loadBMP(filename, &data, &width, &height)) return;
+	if(!loadBMP(filename, &data, &width, &height)) exit(0);
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
