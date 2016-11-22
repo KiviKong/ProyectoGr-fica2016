@@ -17,13 +17,13 @@
 #include "Asteroids.h"
 #include "Background.h"
 
-#define numAsteroids 100
+#define numAsteroids 2000
 #define maxDepth (-2000)
 
 #define to_rads(a) (180 * a / M_PI)
 
 static GLuint programId, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
-		projMatrixLoc, viewMatrixLoc;
+		projMatrixLoc, viewMatrixLoc,vertexNormalLoc;
 
 static Asteroid* asteroids;
 static Background background;
@@ -93,7 +93,7 @@ static void createAsteroids() {
 static void bindAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
-		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc);
+		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc,vertexNormalLoc);
 	}
 }
 
@@ -132,6 +132,10 @@ static void drawAsteroids() {
 			if (collision == 1) {
 				Asteroid_destroy(asteroids[iterator]);
 				asteroids[iterator] = NULL;
+				asteroids[iterator]=create_asteroid2((rand() % 10) + 1,20,20);
+				setVelAsteroid(asteroids[iterator], (rand() % 5) + 2);
+				Asteroid_bind(asteroids[iterator],vertexPosLoc,vertexColLoc,vertexNormalLoc);
+
 			}
 			if (asteroids[iterator] != NULL) {
 				Asteroid_draw(asteroids[iterator]);
@@ -189,6 +193,7 @@ static void initShaders() {
 	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
 	projMatrixLoc = glGetUniformLocation(programId, "projMatrix");
 	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
+	vertexNormalLoc=glGetAttribLocation(programId,"vertexNormal");
 }
 
 static void exitFunc(unsigned char key, int x, int y) {

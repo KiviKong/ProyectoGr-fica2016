@@ -113,15 +113,16 @@ Asteroid create_asteroid2(float radius, int P, int M){
 		new->vertexNum = (P + 1) * M*3;
 		new->indexNum = 2 * P * M + 3 * P;
 		new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
+		new->vertexNorm = (float*) malloc(new->vertexNum * sizeof(float));
 		new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
 		new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
 		new->lats = P;
 		new->longs = M;
 		new->r = radius;
 
-		float colorR = 0.5;
-		float colorG = 0.5;
-		float colorB = 0.7;
+		float colorR = 0.2;
+		float colorG = 0.2;
+		float colorB = 0.2;
 		float random1;
 
 	GLfloat phi = 0;
@@ -152,6 +153,10 @@ Asteroid create_asteroid2(float radius, int P, int M){
 				new->vertexPos[i    ] = radius * x*random1;
 				new->vertexPos[i + 1] = radius * y*random1;
 				new->vertexPos[i + 2] = radius * z*random1;
+
+				new->vertexNorm[i    ] = new->vertexPos[i];
+				new->vertexNorm[i + 1] = new->vertexPos[i+1];
+				new->vertexNorm[i + 2] = new->vertexPos[i+2];
 
 				new->vertexCol[i    ] = (colorR) * ruido;
 				new->vertexCol[i + 1] = (colorG) * ruido;
@@ -189,17 +194,17 @@ Asteroid create_asteroid2(float radius, int P, int M){
 			new->AsteroidIndex[k ++] = 0xFFFF;
 		}
 		new->speed = 0;
-			new->x = rand() % 100 + (-50);
-			new->y = rand() % 100 + (-50);
+			new->x = rand() % 180 + (-90);
+			new->y = rand() % 180 + (-90);
 			new->z = -(rand() % 1000)-1000;
 
 		return new;
 }
 
-void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc) {
+void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc, GLuint vertexNormalLoc) {
 	glGenVertexArrays(1, &a->vertexId);
-	a->indexBufferId = (GLuint*) malloc(3 * sizeof(GLuint));
-	glGenBuffers(3, a->indexBufferId);
+	a->indexBufferId = (GLuint*) malloc(4 * sizeof(GLuint));
+	glGenBuffers(4, a->indexBufferId);
 	glBindVertexArray(a->vertexId);
 	glBindBuffer(GL_ARRAY_BUFFER, a->indexBufferId[0]);
 	glBufferData(GL_ARRAY_BUFFER, (a->vertexNum) * sizeof(float), a->vertexPos,
@@ -217,9 +222,15 @@ void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (a->indexNum) * sizeof(GLuint),
 			a->AsteroidIndex,
 			GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, a->indexBufferId[3]);
+	glBufferData(GL_ARRAY_BUFFER, (a->vertexNum)*sizeof(float), a->vertexNorm, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexNormalLoc);
 
 }
 void Asteroid_destroy(Asteroid a) {
+	glDeleteVertexArrays(1,a->AsteroidIndex);
+	glDeleteBuffers(1,a->indexBufferId);
 	free(a->vertexPos);
 	free(a->vertexCol);
 	free(a->AsteroidIndex);
