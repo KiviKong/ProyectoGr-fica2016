@@ -251,7 +251,7 @@ void Asteroid_draw(Asteroid a) {
 
 float updateAsteroidZ(Asteroid a) {
 
-	if (a->z == 0)
+	if (a->z >= 0)
 		return a->z = -2000;
 	else
 		return a->z += a->speed;
