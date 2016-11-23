@@ -249,12 +249,14 @@ void Asteroid_draw(Asteroid a) {
 
 }
 
-float updateAsteroidZ(Asteroid a) {
+float updateAsteroidZ(Asteroid a,float velocity) {
+
 
 	if (a->z >= 0)
 		return a->z = -2000;
 	else
-		return a->z += a->speed;
+		return a->z += (a->speed*velocity);
+
 }
 
 void setVelAsteroid(Asteroid a, float vel) {
