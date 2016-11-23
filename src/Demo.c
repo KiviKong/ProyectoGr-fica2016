@@ -44,6 +44,7 @@ static Mat4 csMat;
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
+static Mat4 laserMat;
 
 static int extra = 0;
 
@@ -159,7 +160,6 @@ static void destroyAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
 		Asteroid_destroy(asteroids[i]);
-
 	}
 }
 
@@ -189,6 +189,20 @@ static void shootNewLaser() {
 	push(stack, new);
 }
 
+static void drawLaserBeams() {
+	int i;
+	for(i = 0; i < stack->top; i++) {
+		Cylinder tmp = stack->stk[i];
+		mIdentity(&laserMat);
+		translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
+		cylinder_draw(tmp);
+	}
+}
+
+static void destroyLaserBeams() {
+	Stack_destroy(stack);
+}
 
 // =================================== //
 // 				SCREEN				   //
@@ -557,15 +571,7 @@ static void display() {
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 
-	Mat4 laserMat;
-	int i;
-	for(i = 0; i < stack->top; i++) {
-		Cylinder tmp = stack->stk[i];
-		mIdentity(&laserMat);
-		translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
-		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
-		cylinder_draw(tmp);
-	}
+	drawLaserBeams();
 
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	nave_draw(n1);
@@ -648,6 +654,7 @@ int main(int argc, char **argv) {
 
 	destroyAsteroids();
 	nave_destroy(n1);
+	destroyLaserBeams();
 	free(asteroids);
 	return 0;
 }

@@ -13,7 +13,8 @@ struct strStack {
 typedef struct strStack* CylinderStack;
 
 CylinderStack Stack_create();
+void Stack_destroy(CylinderStack s);
 void push(CylinderStack s, Cylinder c);
-Cylinder pop(CylinderStack s, Cylinder c);
+Cylinder pop(CylinderStack s);
 
 #endif
