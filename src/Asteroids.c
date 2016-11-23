@@ -20,12 +20,12 @@ Asteroid Asteroid_create(float r, int lats, int longs, int feo) {
 	new->longs = longs;
 	new->r = r;
 
-	float colorR = 0.2;
-	float colorG = 0.2;
-	float colorB = 0.2;
-	float colorChangeR = (0.3 - 0.2) / longs;
-	float colorChangeG = (0.3 - 0.2) / longs;
-	float colorChangeB = (0.3 - 0.2) / longs;
+	float colorR = 0.6196;
+	float colorG = 0.4078;
+	float colorB = 0.0627;
+	float colorChangeR = (0.7 - 0.6) / longs;
+	float colorChangeG = (0.45 - 0.35) / longs;
+	float colorChangeB = (0.1 - 0.04) / longs;
 
 	int i, j;
 	int pos = 0, col = 0;
@@ -113,15 +113,20 @@ Asteroid create_asteroid2(float radius, int P, int M){
 		new->vertexNum = (P + 1) * M*3;
 		new->indexNum = 2 * P * M + 3 * P;
 		new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
+		new->vertexNorm = (float*) malloc(new->vertexNum * sizeof(float));
 		new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
 		new->AsteroidIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
 		new->lats = P;
 		new->longs = M;
 		new->r = radius;
 
-		float colorR = 0.5;
-		float colorG = 0.5;
-		float colorB = 0.7;
+		float colorR = 0.2;
+		float colorG = 0.2;
+		float colorB = 0.2;
+
+		// float colorR = 0.6196;
+		// float colorG = 0.4078;
+		// float colorB = 0.0627;
 		float random1;
 
 	GLfloat phi = 0;
@@ -135,7 +140,7 @@ Asteroid create_asteroid2(float radius, int P, int M){
 		setbuf(stdout, 0);
 		float ruido;
 
-	//	Fórmulas de Bessel
+	//	Fï¿½rmulas de Bessel
 		GLfloat inc_theta = 2 * M_PI / M;
 		int i = 0, j = 0, p, m;
 		for(p = 1; p <= P + 1; p ++) {
@@ -153,11 +158,15 @@ Asteroid create_asteroid2(float radius, int P, int M){
 				new->vertexPos[i + 1] = radius * y*random1;
 				new->vertexPos[i + 2] = radius * z*random1;
 
+				new->vertexNorm[i    ] = new->vertexPos[i];
+				new->vertexNorm[i + 1] = new->vertexPos[i+1];
+				new->vertexNorm[i + 2] = new->vertexPos[i+2];
+
 				new->vertexCol[i    ] = (colorR) * ruido;
 				new->vertexCol[i + 1] = (colorG) * ruido;
 				new->vertexCol[i + 2] = (colorB) * ruido;
 
-	//			Mapeo de coordenadas esféricas a plano
+	//			Mapeo de coordenadas esfï¿½ricas a plano
 				/*sphereTex[j    ] = 0.5 + atan2(z, x) / (2 * M_PI);  // atan2(z, x) = arcotangente(z / x)
 				sphereTex[j + 1] = 0.5 - asin(y) / M_PI;
 
@@ -189,17 +198,17 @@ Asteroid create_asteroid2(float radius, int P, int M){
 			new->AsteroidIndex[k ++] = 0xFFFF;
 		}
 		new->speed = 0;
-			new->x = rand() % 100 + (-50);
-			new->y = rand() % 100 + (-50);
+			new->x = rand() % 180 + (-90);
+			new->y = rand() % 180 + (-90);
 			new->z = -(rand() % 1000)-1000;
 
 		return new;
 }
 
-void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc) {
+void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc, GLuint vertexNormalLoc) {
 	glGenVertexArrays(1, &a->vertexId);
-	a->indexBufferId = (GLuint*) malloc(3 * sizeof(GLuint));
-	glGenBuffers(3, a->indexBufferId);
+	a->indexBufferId = (GLuint*) malloc(4 * sizeof(GLuint));
+	glGenBuffers(4, a->indexBufferId);
 	glBindVertexArray(a->vertexId);
 	glBindBuffer(GL_ARRAY_BUFFER, a->indexBufferId[0]);
 	glBufferData(GL_ARRAY_BUFFER, (a->vertexNum) * sizeof(float), a->vertexPos,
@@ -217,9 +226,15 @@ void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (a->indexNum) * sizeof(GLuint),
 			a->AsteroidIndex,
 			GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, a->indexBufferId[3]);
+	glBufferData(GL_ARRAY_BUFFER, (a->vertexNum)*sizeof(float), a->vertexNorm, GL_STATIC_DRAW);
+	glVertexAttribPointer(vertexNormalLoc, 3, GL_FLOAT, 0, 0, 0);
+	glEnableVertexAttribArray(vertexNormalLoc);
 
 }
 void Asteroid_destroy(Asteroid a) {
+	glDeleteVertexArrays(1,a->AsteroidIndex);
+	glDeleteBuffers(1,a->indexBufferId);
 	free(a->vertexPos);
 	free(a->vertexCol);
 	free(a->AsteroidIndex);
@@ -249,4 +264,3 @@ float updateAsteroidZ(Asteroid a) {
 void setVelAsteroid(Asteroid a, float vel) {
 	a->speed = vel;
 }
-

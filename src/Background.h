@@ -1,5 +1,5 @@
 #ifndef BACKGROUND_H_
-#define BACKGROUND_H_ value
+#define BACKGROUND_H_
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>

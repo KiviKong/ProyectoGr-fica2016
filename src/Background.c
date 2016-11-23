@@ -46,7 +46,7 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
 
 void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc) {
     glGenVertexArrays(1, &b->vertexId);
-    b->bufferId = (GLuint*) malloc(3 * sizeof(GLuint));
+    b->bufferId = (GLuint*) malloc(4 * sizeof(GLuint));
     glGenBuffers(4, b->bufferId);
 
     glBindVertexArray(b->vertexId);
@@ -81,25 +81,25 @@ void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc) {
     glBindBuffer(GL_ARRAY_BUFFER, b->bufferId[3]);
 	glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(GLuint) * 8,
+        sizeof(GLfloat) * 8,
         b->textureArr,
         GL_STATIC_DRAW
     );
-    glVertexAttribPointer(tLoc, 3, GL_FLOAT, 0, 0, 0);
+    glVertexAttribPointer(tLoc, 2, GL_FLOAT, 0, 0, 0);
     glEnableVertexAttribArray(tLoc);
 
 	glGenTextures(1, b->texture);
-    loadTexture("textures/ast.bmp", b->texture[0]);
+    loadTexture("textures/space-bg.bmp", b->texture[0]);
 };
 
 
 void BackgroundDraw(Background b){
     glBindVertexArray(b->vertexId);
     glBindBuffer(
-        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
         b->bufferId[2]
     );
-    glActiveTexture(GL_TEXTURE0);
+
     glBindTexture(GL_TEXTURE_2D, b->texture[0]);
     glDrawElements(
         GL_TRIANGLE_STRIP,

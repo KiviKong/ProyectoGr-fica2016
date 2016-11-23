@@ -23,17 +23,18 @@ struct strCylinder {
 	int indexNum;
 	GLuint vertexId;
 	GLuint* indexBufferId;
-
+	GLfloat coord[3];
 };
 typedef struct strCylinder* Cylinder;
 Cylinder cylinder_create(float length, float bottomRadius,
-float topRadius, int slices,
-int stacks,
-float bottomColor[3], float topColor[3]);
+						 float topRadius, int slices,
+						 int stacks, float bottomColor[3], float topColor[3],
+						 float coordX, float coordY, float coordZ
+					 );
 void cylinder_bind(Cylinder c, GLuint vLoc, GLuint cLoc);
 void cylinder_destroy(Cylinder);
 void cylinder_draw(Cylinder);
-void printarray(Cylinder);
+float cylinder_update(Cylinder);
 
 
 #endif /* CYLINDER_H_ */

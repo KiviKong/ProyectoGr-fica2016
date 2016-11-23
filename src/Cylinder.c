@@ -9,13 +9,18 @@
 
 
 Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
-		int slices, int stacks, float bottomColor[3], float topColor[3]) {
+		int slices, int stacks, float bottomColor[3], float topColor[3], float coordX, float coordY, float coordZ) {
 	Cylinder new = (Cylinder) malloc(sizeof(struct strCylinder));
 	new->vertexNum = ((slices * 2) + 2) * stacks * 3;
 	new->indexNum = (((slices * 2) + 2) * stacks) + stacks-1;
 	new->vertexPos = (float*) malloc(new->vertexNum * sizeof(float));
 	new->vertexCol = (float*) malloc(new->vertexNum * sizeof(float));
 	new->cylinderIndex = (GLuint*) malloc(new->indexNum * sizeof(GLuint));
+	new->coord[0] = coordX;
+	new->coord[1] = coordY;
+	new->coord[2] = coordZ;
+
+
 	float lengthChange = length / stacks; //cambio de altura para cada stack
 	float currentLength = length / 2; //punto y donde inicia primer stack
 	float angle = (2 * M_PI) / slices;
@@ -39,11 +44,9 @@ Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
 			float ruido = rand() % 15;
 			ruido /= 100;
 			ruido = 1 - ruido;
-			new->vertexPos[pos++] = cosf(currentAngle)
-					* (radius);
+			new->vertexPos[pos++] = cosf(currentAngle) * (radius);
+			new->vertexPos[pos++] = -sinf(currentAngle) * (radius);
 			new->vertexPos[pos++] = currentLength;
-			new->vertexPos[pos++] = -sinf(currentAngle)
-					* (radius);
 
 			new->vertexCol[col++] = (colorR ) * ruido;
 			new->vertexCol[col++] = (colorG ) * ruido;
@@ -52,8 +55,8 @@ Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
 			new->cylinderIndex[ind++] = indv++;
 
 			new->vertexPos[pos++] = cosf(currentAngle) * (radius+radiusChange);
-			new->vertexPos[pos++] = currentLength-lengthChange;
 			new->vertexPos[pos++] = -sinf(currentAngle) * (radius+radiusChange);
+			new->vertexPos[pos++] = currentLength-lengthChange;
 
 			new->vertexCol[col++] = (colorR+colorChangeR) * ruido;
 			new->vertexCol[col++] = (colorG+colorChangeG) * ruido;
@@ -77,6 +80,7 @@ Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
 
 	return new;
 }
+
 void cylinder_bind(Cylinder c, GLuint vLoc, GLuint cLoc) {
 
 	glGenVertexArrays(1,&c->vertexId);
@@ -102,6 +106,7 @@ void cylinder_bind(Cylinder c, GLuint vLoc, GLuint cLoc) {
 			GL_STATIC_DRAW);
 
 }
+
 void cylinder_destroy(Cylinder c) {
 	free(c->vertexPos);
 	free(c->vertexCol);
@@ -109,26 +114,21 @@ void cylinder_destroy(Cylinder c) {
 	free(c->indexBufferId);
 	free(c);
 }
+
 void cylinder_draw(Cylinder c) {
 	glEnable(GL_PRIMITIVE_RESTART);
 	glPrimitiveRestartIndex(0xFFFF);
-	//glEnable(GL_CULL_FACE);
-	//glFrontFace(GL_CW);
+
 	glEnable(GL_DEPTH_TEST);
 
 	glBindVertexArray(c->vertexId);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->indexBufferId[2]);
 
-	//glDrawArrays(GL_TRIANGLE_STRIP,0,c->vertexNum*sizeof(float));
 	glDrawElements(GL_TRIANGLE_STRIP, c->indexNum, GL_UNSIGNED_INT, 0);
 }
 
-void printarray(Cylinder c) {
-	int i = 0;
-	for (i = 0; i < c->vertexNum; i++) {
-		printf("%f  ", c->vertexPos[i]);
-	}
-	for (i = 0; i < c->indexNum; i++) {
-		printf("%d ", c->cylinderIndex[i]);
-	}
+float cylinder_update(Cylinder c) {
+	if (c->coord[2] == -2000)
+		// do something
+	return 0;
 }

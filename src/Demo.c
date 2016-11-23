@@ -16,17 +16,28 @@
 #include "Nave.h"
 #include "Asteroids.h"
 #include "Background.h"
+#include "LaserBeam.h"
+#include "Cylinder.h"
+#include "CylinderStack.h"
 
-#define numAsteroids 100
+#define numAsteroids 2000
 #define maxDepth (-2000)
+#define numLaser 1
+
+#define X 0
+#define Y 1
+#define Z 2
+
 
 #define to_rads(a) (180 * a / M_PI)
 
 static GLuint programId, bgProgram, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
-		projMatrixLoc, viewMatrixLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
+		projMatrixLoc, viewMatrixLoc, vertexNormalLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
 		projMatrixLocBG, viewMatrixLocBG, textureLoc;
 
+
 static Asteroid* asteroids;
+static CylinderStack stack;
 static Background background;
 static int iterator;
 static Mat4 csMat;
@@ -66,7 +77,6 @@ static float cameraZ = -1;
 static float angle = 0;
 static float cameraAngle = 0;
 static float anglespeed = 1;
-static float anglespeed2 = 5;
 static float cameraAngleY = 0;
 static float aspect;
 
@@ -78,15 +88,11 @@ static void createAsteroids() {
 	int i;
 	float randVel;
 	float randRadio;
-	float randFeo;
 	for (i = 0; i < numAsteroids; i++) {
 		randVel = (rand() % 5) + 2;
 		randRadio = (rand() % 10) + 1;
-		randFeo = rand() % 2;
 		asteroids[i]=create_asteroid2(randRadio,20,20);
-		//asteroids[i] = Asteroid_create(randRadio, 10, 15, randFeo);
 		setVelAsteroid(asteroids[i], randVel);
-
 	}
 
 }
@@ -94,7 +100,7 @@ static void createAsteroids() {
 static void bindAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
-		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc);
+		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc,vertexNormalLoc);
 	}
 }
 
@@ -103,10 +109,8 @@ static void drawAsteroids() {
 	for (iterator = 0; iterator < numAsteroids; iterator++) {
 		if (asteroids[iterator] != NULL) {
 			mIdentity(&csMat);
-			if ((asteroids[iterator]->z + asteroids[iterator]->speed)
-					< cameraZ + 1 - 7
-					&& (asteroids[iterator]->z + asteroids[iterator]->speed)
-							> cameraZ - 1 - asteroids[iterator]->speed - 7) {
+			if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7))
+					&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7))) {
 				collision = checkCollision(cameraX+shipX + 1, cameraX+shipX - 1,
 						-cameraY-shipY + .8, -cameraY-shipY - .8,
 						asteroids[iterator]->x + asteroids[iterator]->r,
@@ -116,7 +120,7 @@ static void drawAsteroids() {
 				if (collision == 1) {
 					extra++;
 					printf("%d ", extra);
-					printf(" %f, %f, %f, %f, %f, %f, %f, %f ", cameraX + 1,
+					printf(" %f, %f, %f, %f, %f, %f, %f, %f\n", cameraX + 1,
 							cameraX - 1, -cameraY + .8, -cameraY - .8,
 							asteroids[iterator]->x + asteroids[iterator]->r,
 							asteroids[iterator]->x - asteroids[iterator]->r,
@@ -133,6 +137,10 @@ static void drawAsteroids() {
 			if (collision == 1) {
 				Asteroid_destroy(asteroids[iterator]);
 				asteroids[iterator] = NULL;
+				asteroids[iterator]=create_asteroid2((rand() % 10) + 1,20,20);
+				setVelAsteroid(asteroids[iterator], (rand() % 5) + 2);
+				Asteroid_bind(asteroids[iterator],vertexPosLoc,vertexColLoc,vertexNormalLoc);
+
 			}
 			if (asteroids[iterator] != NULL) {
 				Asteroid_draw(asteroids[iterator]);
@@ -153,12 +161,37 @@ static void destroyAsteroids() {
 
 
 // =================================== //
+// 			  LASER BEAMS			   //
+// =================================== //
+static void initLaserBeams() {
+	stack = Stack_create();
+}
+
+static void shootNewLaser() {
+	float col[] = {1, 1, 1};
+	Cylinder new = cylinder_create (
+		10, 				// float length
+		0.2, 				// float bottomRadius
+		0.2, 				// float topRadius
+		10,					// int slices
+		1,					// int stacks
+		col,				// float bottomColor[3]
+		col,				// float topColor[3]
+		(shipX + cameraX),	// float coordX
+		(shipY - cameraY),	// float coordY
+		-10					// float coordZ
+	);
+	cylinder_bind(new, vertexPosLoc, vertexColLoc);
+	push(stack, new);
+}
+
+
+// =================================== //
 // 				SCREEN				   //
 // =================================== //
 
 static void createBackground() {
 	GLfloat max = -maxDepth * tan(to_rads(53/2));
-	printf("%f\n", max);
 	background = BackgroundCreate(
 		-max, // minX
 		max,  // maxX
@@ -191,7 +224,7 @@ static void initShaders() {
 	modelMatrixLoc = glGetUniformLocation(programId, "modelMatrix");
 	projMatrixLoc = glGetUniformLocation(programId, "projMatrix");
 	viewMatrixLoc = glGetUniformLocation(programId, "viewMatrix");
-
+	vertexNormalLoc=glGetAttribLocation(programId,"vertexNormal");
 
 	GLuint bgShader = compileShader("shaders/bg.fsh", GL_FRAGMENT_SHADER);
 	if (!shaderCompiled(bgShader))
@@ -206,17 +239,23 @@ static void initShaders() {
 	modelMatrixLocBG = glGetUniformLocation(bgProgram, "modelMatrix");
 	projMatrixLocBG = glGetUniformLocation(bgProgram, "projMatrix");
 	viewMatrixLocBG = glGetUniformLocation(bgProgram, "viewMatrix");
-	textureLoc = glGetUniformLocation(bgProgram, "texCoord");
+	textureLoc = glGetAttribLocation(bgProgram, "texCoord");
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
-	if (key == 32) {
-		s *= -1;
-		cameraAngle += 180 * s;
-	}
-	if (key == 27) {
-		glDeleteVertexArrays(1, va);
-		exit(0);
+	switch (key) {
+		case 13:
+			s *= -1;
+			cameraAngle += 180 * s;
+			break;
+		case 32:
+			printf("=========\nENTER: (%f, %f, %f)\n=========\n", (shipX + cameraX), (shipY + cameraY), (shipZ + cameraZ));
+			shootNewLaser();
+			break;
+		case 27:
+			glDeleteVertexArrays(1, va);
+			exit(0);
+			break;
 	}
 }
 
@@ -229,6 +268,7 @@ static void createShape() {
 
 	createBackground();
 	createAsteroids();
+	initLaserBeams();
 	bindAsteroids();
 
 	n1 = nave_create();
@@ -490,14 +530,24 @@ static void display() {
 	glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,identity.values);
 	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, identity.values);
-	glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
+	// glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
 	BackgroundDraw(background);
 
 	glUseProgram(programId);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 
+	Mat4 laserMat;
+	int i;
+	for(i = 0; i < stack->top; i++) {
+		Cylinder tmp = stack->stk[i];
+		mIdentity(&laserMat);
+		translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
+		cylinder_draw(tmp);
+	}
+
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	nave_draw(n1);
 	drawAsteroids();
 
