@@ -37,7 +37,7 @@ Asteroid create_asteroid2(float radius, int P, int M);
 void Asteroid_bind(Asteroid a, GLuint vLoc, GLuint cLoc, GLuint vertexNormalLoc);
 void Asteroid_destroy(Asteroid);
 void Asteroid_draw(Asteroid);
-float updateAsteroidZ(Asteroid a);
+float updateAsteroidZ(Asteroid a,float velocity);
 void setVelAsteroid(Asteroid a, float vel);
 
 

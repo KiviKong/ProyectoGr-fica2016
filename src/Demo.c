@@ -56,8 +56,11 @@ static short up = 0x01;
 static short down = 0x02;
 static short left = 0x08;
 static short right = 0x04;
+static short acc=0x01;
+static short deacc=0x02;
 
 static short accion = 0;
+static short accionacc=0;
 static short s = 1;
 static int motion;
 static float speed = 7;
@@ -70,6 +73,7 @@ static float shipY = 0;
 static float shipZ = 0;
 static float angleZ = 0;
 static float angleY = 0;
+static float velocity=1;
 
 static float cameraX = 0;
 static float cameraY = 0;
@@ -130,7 +134,7 @@ static void drawAsteroids() {
 
 			}
 			translate(&csMat, asteroids[iterator]->x, asteroids[iterator]->y,
-					updateAsteroidZ(asteroids[iterator]));
+					updateAsteroidZ(asteroids[iterator],velocity));
 
 			rotateX(&csMat, angle + 50);
 			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
@@ -292,10 +296,10 @@ static void rotateLeft() {
 	cameraAngle += anglespeed;
 	/*if (cameraAngle > 60*s)
 	 cameraAngle = 60*s;*/
-	angleZ += anglespeed;
+	angleZ += anglespeed+((velocity-1)*.05);
 	if (angleZ > 30)
 		angleZ = 30;
-	shipX -= 0.05;
+	shipX -= 0.05+((velocity-1)*.03);
 	if (shipX < -1.7)
 		shipX = -1.7;
 	if (cameraAngle > 20) {
@@ -316,10 +320,10 @@ static void rotateRight() {
 	cameraAngle -= anglespeed;
 	/*if (cameraAngle < -60*s)
 	 cameraAngle = -60*s;*/
-	angleZ -= anglespeed;
+	angleZ -= anglespeed+((velocity-1)*.05);
 	if (angleZ < -30)
 		angleZ = -30;
-	shipX += 0.05;
+	shipX += 0.05+((velocity-1)*.03);
 	if (shipX > 1.7)
 		shipX = 1.7;
 
@@ -358,10 +362,10 @@ static void moveUp() {
 	cameraAngleY += anglespeed;
 	if (cameraAngleY > 20)
 		cameraAngleY = 20;
-	angleY -= anglespeed;
+	angleY -= anglespeed+((velocity-1)*.05);
 	if (angleY < -30)
 		angleY = -30;
-	shipY -= 0.05;
+	shipY -= 0.05+((velocity-1)*.03);
 	if (shipY < -1.7)
 		shipY = -1.7;
 	if (shipY - cameraY < limiteInfY) {
@@ -378,10 +382,10 @@ static void moveUp() {
 
 static void moveDown() {
 	cameraAngleY -= anglespeed;
-	angleY += anglespeed;
+	angleY += anglespeed+((velocity-1)*.05);
 	if (angleY > 30)
 		angleY = 30;
-	shipY += 0.05;
+	shipY += 0.05+((velocity-1)*.03);
 	if (shipY > 1.7)
 		shipY = 1.7;
 	if (cameraAngleY < -20)
@@ -397,6 +401,17 @@ static void moveDown() {
 
 	correctDown = 0;
 }
+static void accelerate(){
+	velocity+=0.1;
+	if(velocity>1.75)
+			velocity=1.75;
+}
+
+static void stop(){
+	velocity-=0.1;
+	if(velocity<0.5)
+		velocity=0.5;
+}
 
 
 // =================================== //
@@ -409,6 +424,11 @@ static void display() {
 	Mat4 view;
 	mIdentity(&view);
 	mIdentity(&shipMat);
+
+	if((accionacc & acc)!=0){
+		accelerate();
+	}if((accionacc & deacc)!=0)
+		stop();
 
 	if ((accion & up) != 0) {
 		moveUp();
@@ -502,7 +522,7 @@ static void display() {
 
 	translate(&view, -cameraX, cameraY, -cameraZ);
 
-	translate(&shipMat, cameraX, -cameraY, cameraZ);
+	translate(&shipMat, cameraX, -cameraY, cameraZ-((velocity-1)*3));
 
 	rotateY(&shipMat, cameraAngle);
 	rotateX(&shipMat, -cameraAngleY);
@@ -557,6 +577,13 @@ static void display() {
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
 
+	if(key==GLUT_KEY_SHIFT_L||key=='A'){
+		accionacc |=acc;
+		//accionacc &= 0XFD;
+	}if(key==GLUT_KEY_SHIFT_R||key=='S'){
+		accionacc |=deacc;
+		//accionacc &= 0XFE;
+	}
 	if (key == GLUT_KEY_RIGHT &&(accion&left)!=left) {
 		accion |= right;
 	} else if (key == GLUT_KEY_LEFT &&(accion&right)!=right) {
@@ -569,6 +596,11 @@ static void startMotionFunc(int key, int x, int y) {
 }
 
 static void endMotionFunc(int key, int x, int y) {
+	if(key==GLUT_KEY_SHIFT_L)
+		accionacc &= 0XFE;
+	if(key==GLUT_KEY_SHIFT_R)
+		accionacc &= 0XFD;
+
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
 		if(correctDown!=1&&(accion&down)!=down)
 		correctUp = 1;
