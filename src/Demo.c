@@ -173,6 +173,8 @@ static void initLaserBeams() {
 
 static void shootNewLaser() {
 	float col[] = {1, 1, 1};
+	float dx = (accion & left) ? -speed : (accion & right) ? speed : 0;
+	float dy = (accion & up) ? -speed : (accion & down) ? speed : 0;
 	Cylinder new = cylinder_create (
 		10, 				// float length
 		0.2, 				// float bottomRadius
@@ -181,9 +183,9 @@ static void shootNewLaser() {
 		1,					// int stacks
 		col,				// float bottomColor[3]
 		col,				// float topColor[3]
-		(shipX + cameraX),	// float coordX
-		(shipY - cameraY),	// float coordY
-		-10					// float coordZ
+		(shipX + cameraX + dx),	// float coordX
+		(shipY - cameraY + dy),	// float coordY
+		(shipZ - 10)		// float coordZ
 	);
 	cylinder_bind(new, vertexPosLoc, vertexColLoc);
 	push(stack, new);
