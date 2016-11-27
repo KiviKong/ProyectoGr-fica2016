@@ -204,4 +204,3 @@ short checkCollision(float navemaxX,float naveminX,float navemaxY,float naveminY
 	}
 	return 0;
 }
-
