@@ -268,19 +268,30 @@ void setVelAsteroid(Asteroid a, float vel) {
 }
 
 bool Asteroid_collide(Asteroid a, Cylinder c) {
-	float astMinX;
-	float astMaxX;
+	printf("asd\n");
+	float astMinX = a->x - a->r;
+	float astMaxX = a->x + a->r;
 
 	float cylMinX = c->coord[0] - 0.1;
 	float cylMaxX = c->coord[0] + 0.1;
 
-	float astMinY;
-	float astMaxY;
+	float astMinY = a->y - a->r;
+	float astMaxY = a->y + a->r;
 
 	float cylMinY = c->coord[1] - 0.1;
 	float cylMaxY = c->coord[1] + 0.1;
 
 	// if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7))
 	// 		&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7))) {
+	if((astMaxX>cylMinX && astMaxX<cylMaxX)||(astMinX>cylMinX && astMinX<cylMaxX)){
+		if((astMaxY>cylMinY&& astMaxY<cylMaxY)||(astMinY>cylMinY&& astMinY<cylMaxY)){
+			return true;
+		}
+	}else if((cylMaxX>astMinX && cylMaxX<astMaxX)||(cylMinX>astMinX && cylMinX<astMaxX)){
+		if((cylMaxY>astMinY && cylMaxY<astMaxY)||(cylMinY>astMinY && cylMinY<astMaxY)){
+			return true;
+		}
+	}
+
 	return false;
 };

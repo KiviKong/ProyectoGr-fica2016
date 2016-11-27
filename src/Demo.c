@@ -20,7 +20,7 @@
 #include "Cylinder.h"
 #include "CylinderStack.h"
 
-#define numAsteroids 2000
+#define numAsteroids 2
 #define maxDepth (-2000)
 #define numLaser 1
 
@@ -196,16 +196,33 @@ static void shootNewLaser() {
 
 static void drawLaserBeams() {
 	int i;
+	bool collided = false;
+	int idColl = 0;
 	for(i = 0; i < stack->top; i++) {
-		Cylinder tmp = stack->stk[i];
-		if(tmp->coord[Z] < -50) {
-			stack->top--;
-			cylinder_destroy(tmp);
-		} else {
-			mIdentity(&laserMat);
-			translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
-			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
-			cylinder_draw(tmp);
+		if(stack->stk[i] != NULL) {
+			Cylinder tmp = stack->stk[i];
+			if(tmp->coord[Z] < -50) {
+				stack->top--;
+				cylinder_destroy(tmp);
+			} else {
+				for (iterator = 0; iterator < numAsteroids; iterator++) {
+					if(asteroids[iterator] != NULL)
+						collided = Asteroid_collide(asteroids[iterator], tmp);
+					if(collided) {
+						idColl = iterator;
+						break;
+					}
+				}
+				if(!collided) {
+					mIdentity(&laserMat);
+					translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+					glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
+					cylinder_draw(tmp);
+				} else {
+					cylinder_destroy(tmp);
+					Asteroid_destroy(asteroids[idColl]);
+				}
+			}
 		}
 	}
 }
