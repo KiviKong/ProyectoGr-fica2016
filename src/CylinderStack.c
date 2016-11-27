@@ -8,15 +8,25 @@ CylinderStack Stack_create() {
     return new;
 };
 
+void Stack_destroy(CylinderStack stack) {
+	int i;
+	for(i = 0; i < stack->top; i++) {
+		cylinder_destroy(stack->stk[i]);
+	}
+	free(stack->stk);
+	free(stack);
+}
+
 void push(CylinderStack s, Cylinder c) {
     if(s->top == (MAX - 1))
         s->top = 0;
     s->stk[s->top++] = c;
-    printf("pushed new: MAX: %d\n", MAX);
 };
 
-Cylinder pop(CylinderStack s, Cylinder c) {
+Cylinder pop(CylinderStack s) {
     if(s->top == -1)
         return NULL;
-    return s->stk[s->top--];
+	Cylinder popped = s->stk[s->top--];
+	cylinder_destroy(s->stk[s->top]);
+    return popped;
 };

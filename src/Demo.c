@@ -28,6 +28,8 @@
 #define Y 1
 #define Z 2
 
+#define log(a) printf("Log: %d\n", a);
+#define logs(s) printf("Log: %s\n", s);
 
 #define to_rads(a) (180 * a / M_PI)
 
@@ -44,6 +46,7 @@ static Mat4 csMat;
 static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
+static Mat4 laserMat;
 
 static int extra = 0;
 
@@ -158,8 +161,8 @@ static void drawAsteroids() {
 static void destroyAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
+		log(i)
 		Asteroid_destroy(asteroids[i]);
-
 	}
 }
 
@@ -185,12 +188,31 @@ static void shootNewLaser() {
 		col,				// float topColor[3]
 		(shipX + cameraX + dx),	// float coordX
 		(shipY - cameraY + dy),	// float coordY
-		(shipZ - 10)		// float coordZ
+		(shipZ + cameraZ - 15)		// float coordZ
 	);
 	cylinder_bind(new, vertexPosLoc, vertexColLoc);
 	push(stack, new);
 }
 
+static void drawLaserBeams() {
+	int i;
+	for(i = 0; i < stack->top; i++) {
+		Cylinder tmp = stack->stk[i];
+		if(tmp->coord[Z] < -50) {
+			stack->top--;
+			cylinder_destroy(tmp);
+		} else {
+			mIdentity(&laserMat);
+			translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
+			cylinder_draw(tmp);
+		}
+	}
+}
+
+static void destroyLaserBeams() {
+	Stack_destroy(stack);
+}
 
 // =================================== //
 // 				SCREEN				   //
@@ -581,15 +603,7 @@ static void display() {
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 
-	Mat4 laserMat;
-	int i;
-	for(i = 0; i < stack->top; i++) {
-		Cylinder tmp = stack->stk[i];
-		mIdentity(&laserMat);
-		translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
-		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
-		cylinder_draw(tmp);
-	}
+	drawLaserBeams();
 
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	nave_draw(n1);
@@ -705,6 +719,7 @@ int main(int argc, char **argv) {
 
 	destroyAsteroids();
 	nave_destroy(n1);
+	destroyLaserBeams();
 	free(asteroids);
 	return 0;
 }

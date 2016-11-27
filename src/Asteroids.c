@@ -266,3 +266,21 @@ float updateAsteroidZ(Asteroid a,float velocity) {
 void setVelAsteroid(Asteroid a, float vel) {
 	a->speed = vel;
 }
+
+bool Asteroid_collide(Asteroid a, Cylinder c) {
+	float astMinX;
+	float astMaxX;
+
+	float cylMinX = c->coord[0] - 0.1;
+	float cylMaxX = c->coord[0] + 0.1;
+
+	float astMinY;
+	float astMaxY;
+
+	float cylMinY = c->coord[1] - 0.1;
+	float cylMaxY = c->coord[1] + 0.1;
+
+	// if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7))
+	// 		&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7))) {
+	return false;
+};

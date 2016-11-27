@@ -15,6 +15,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "Cylinder.h"
 
 struct strAsteroid {
 	float (*vertexPos);
@@ -39,6 +40,7 @@ void Asteroid_destroy(Asteroid);
 void Asteroid_draw(Asteroid);
 float updateAsteroidZ(Asteroid a,float velocity);
 void setVelAsteroid(Asteroid a, float vel);
+bool Asteroid_collide(Asteroid a, Cylinder c);
 
 
 #endif /* ASTEROIDS_H_ */

@@ -108,10 +108,12 @@ void cylinder_bind(Cylinder c, GLuint vLoc, GLuint cLoc) {
 }
 
 void cylinder_destroy(Cylinder c) {
+	printf("destroyed\n");
 	free(c->vertexPos);
 	free(c->vertexCol);
 	free(c->cylinderIndex);
 	free(c->indexBufferId);
+	free(c->coord);
 	free(c);
 }
 
@@ -128,7 +130,7 @@ void cylinder_draw(Cylinder c) {
 }
 
 float cylinder_update(Cylinder c) {
-	if (c->coord[2] == -2000)
+	// if (c->coord[2] == -2000)
 		// do something
 	return 0;
 }
