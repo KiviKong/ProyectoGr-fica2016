@@ -221,11 +221,11 @@ static void destroyLaserBeams() {
 static void createBackground() {
 	GLfloat max = -maxDepth * tan(to_rads(53/2));
 	background = BackgroundCreate(
-		-max, // minX
-		max,  // maxX
-		-max, // minY
-		max,  // maxY
-		-1999	 // depth
+		-max*1.5, // minX
+		max*1.5,  // maxX
+		-max*1.5, // minY
+		max*1.5,  // maxY
+		-1800	 // depth
 	);
 	BackgroundBind(background, vertexPosLocBG, vertexColLocBG, textureLoc);
 }
@@ -427,14 +427,26 @@ static void moveDown() {
 }
 static void accelerate(){
 	velocity+=0.1;
-	if(velocity>1.75)
-			velocity=1.75;
+	if(velocity>1.8)
+			velocity=1.8;
 }
 
 static void stop(){
 	velocity-=0.1;
 	if(velocity<0.5)
 		velocity=0.5;
+}
+static void resetVelocity(){
+	printf("%f ",velocity);
+	if(velocity>1){
+		velocity-=0.1;
+		if(velocity<1)
+			velocity=1;
+	}else if(velocity<1){
+		velocity+=0.1;
+		if(velocity>1)
+			velocity=1;
+	}
 }
 
 
@@ -453,15 +465,17 @@ static void display() {
 		accelerate();
 	}if((accionacc & deacc)!=0)
 		stop();
+	if((accionacc & acc)==0 &&(accionacc & deacc)==0&& velocity!=1.0)
+		resetVelocity();
 
 	if ((accion & up) != 0) {
 		moveUp();
-	} else if ((accion & down) != 0) {
+	} if ((accion & down) != 0) {
 		moveDown();
 	}
 	if ((accion & right) != 0) {
 		rotateRight();
-	} else if ((accion & left) != 0) {
+	}if ((accion & left) != 0) {
 		rotateLeft();
 	}
 
@@ -567,13 +581,20 @@ static void display() {
 	rotateY(&csMat, angle++);
 	rotateX(&csMat, angle);
 
+	//Prueba camara
+	/*translate(&shipMat,0,1,0);
+	translate(&csMat,0,1,0);
+	rotateX(&shipMat,-15);
+	rotateX(&csMat,-15);
+*/
+	//fin prueba camara
 
 	Mat4 identity;
 	mIdentity(&identity);
 	glUseProgram(bgProgram);
 	glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,identity.values);
-	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, identity.values);
+	glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, view.values);
 	// glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
 	BackgroundDraw(background);
 
@@ -600,14 +621,26 @@ static void startMotionFunc(int key, int x, int y) {
 		accionacc |=deacc;
 		//accionacc &= 0XFE;
 	}
-	if (key == GLUT_KEY_RIGHT &&(accion&left)!=left) {
+	if (key == GLUT_KEY_RIGHT ) {
 		accion |= right;
-	} else if (key == GLUT_KEY_LEFT &&(accion&right)!=right) {
+		correctLeft=0;
+		correctRight=0;
+
+	} else if (key == GLUT_KEY_LEFT ) {
 		accion |= left;
-	} else if (key == GLUT_KEY_DOWN&&(accion&up)!=up) {
+		correctRight=0;
+		correctLeft=0;
+
+	} else if (key == GLUT_KEY_DOWN) {
 		accion |= down;
-	} else if (key == GLUT_KEY_UP&&(accion&down)!=down) {
+		correctUp=0;
+		correctDown=0;
+
+	} else if (key == GLUT_KEY_UP) {
 		accion |= up;
+		correctDown=0;
+		correctUp=0;
+
 	}
 }
 
@@ -618,20 +651,40 @@ static void endMotionFunc(int key, int x, int y) {
 		accionacc &= 0XFD;
 
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
-		if(correctDown!=1&&(accion&down)!=down)
-		correctUp = 1;
+		if((accion&down)!=down){
+		if(shipY<0){
+			correctUp = 1;
+		}else if(shipY>0){
+			correctDown = 1;
+		}
+		}
 		accion &= 0XFE;
 	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
-		if(correctUp!=1&&(accion&up)!=up)
-		correctDown = 1;
+		if((accion&up)!=up){
+		if(shipY<0){
+			correctUp = 1;
+		}else if(shipY>0){
+			correctDown = 1;
+		}
+	}
 		accion &= 0XFD;
 	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
-		if(correctLeft!=1&&(accion&left)!=left)
-		correctRight = 1;
+		if((accion&left)!=left){
+		if(shipX<0){
+			correctLeft = 1;
+		}else if(shipX>0){
+			correctRight = 1;
+		}
+		}
 		accion &= 0XFB;
 	} else { //izquierda es  00001000
-		if(correctRight!=1&&(accion&right)!=right)
-		correctLeft = 1;
+		if((accion&right)!=right){
+		if(shipX<0){
+			correctLeft = 1;
+		}else if(shipX>0){
+			correctRight = 1;
+		}
+		}
 		accion &= 0XF7;
 	}
 

@@ -22,15 +22,15 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
     bg->vertexPos[11] = depth;
 
     bg->textureArr[0] = 0;  // v
-    bg->textureArr[1] = 1;  // u
+    bg->textureArr[1] = 5;  // u
 
     bg->textureArr[2] = 0;  // u
     bg->textureArr[3] = 0;  // v
 
-    bg->textureArr[4] = 1;  // u
-    bg->textureArr[5] = 1;  // v
+    bg->textureArr[4] = 5;  // u
+    bg->textureArr[5] = 5;  // v
 
-    bg->textureArr[6] = 1;  // v
+    bg->textureArr[6] = 5;  // v
     bg->textureArr[7] = 0;  // u
 
 
@@ -99,6 +99,7 @@ void BackgroundDraw(Background b){
         GL_ELEMENT_ARRAY_BUFFER,
         b->bufferId[2]
     );
+
 
     glBindTexture(GL_TEXTURE_2D, b->texture[0]);
     glDrawElements(
