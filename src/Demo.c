@@ -20,7 +20,7 @@
 #include "Cylinder.h"
 #include "CylinderStack.h"
 
-#define numAsteroids 2
+#define numAsteroids 2000
 #define maxDepth (-2000)
 #define numLaser 1
 
@@ -218,6 +218,7 @@ static void drawLaserBeams() {
 	int i;
 	bool collided = false;
 	int idColl = 0;
+	if(stack->stk!=NULL)
 	for(i = 0; i < stack->top; i++) {
 		if(stack->stk[i] != NULL) {
 			Cylinder tmp = stack->stk[i];
