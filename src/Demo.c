@@ -96,6 +96,7 @@ static float shipZ = 0;
 static float angleZ = 0;
 static float angleY = 0;
 static float velocity=1;
+static float laserSpeed=-2.0;
 
 static float cameraX = 0;
 static float cameraY = 0;
@@ -218,17 +219,21 @@ static void drawLaserBeams() {
 	int i;
 	bool collided = false;
 	int idColl = 0;
-	if(stack->stk!=NULL)
-	for(i = 0; i < stack->top; i++) {
+	for(i = 0; i < 25; i++) {//25 pornumero maximo de disparos segun stack
+
 		if(stack->stk[i] != NULL) {
+			printf("aqqui");
 			Cylinder tmp = stack->stk[i];
-			if(tmp->coord[Z] < -50) {
+			if(tmp->coord[Z] < -200) {
 				stack->top--;
+				stack->stk[i]=NULL;
 				cylinder_destroy(tmp);
 			} else {
 				for (iterator = 0; iterator < numAsteroids; iterator++) {
 					if(asteroids[iterator] != NULL)
-						collided = Asteroid_collide(asteroids[iterator], tmp);
+						if((asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) < (tmp->coord[2] + 5 - (laserSpeed/(velocity*1.0))))
+								&& (asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) > (tmp->coord[2] - 5 - (asteroids[iterator]->speed*velocity) - (laserSpeed/(velocity*1.0)))))
+							collided = Asteroid_collide(asteroids[iterator], tmp);
 					if(collided) {
 						idColl = iterator;
 						break;
@@ -236,12 +241,18 @@ static void drawLaserBeams() {
 				}
 				if(!collided) {
 					mIdentity(&laserMat);
-					translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+					translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]+=(laserSpeed/(velocity*1.0)));
 					glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
 					cylinder_draw(tmp);
 				} else {
+					printf("colision con asteroide");
 					cylinder_destroy(tmp);
+					stack->stk[i]=NULL;
 					Asteroid_destroy(asteroids[idColl]);
+					asteroids[idColl] = NULL;
+					asteroids[idColl]=create_asteroid2((rand() % 10) + 1,20,20);
+					setVelAsteroid(asteroids[idColl], (rand() % 5) + 2);
+					Asteroid_bind(asteroids[idColl],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);
 				}
 			}
 		}

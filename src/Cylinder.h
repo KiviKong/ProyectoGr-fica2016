@@ -16,7 +16,7 @@
 #define CYLINDER_H_
 
 struct strCylinder {
-	float (*vertexPos);
+	float *vertexPos;
 	float *vertexCol;
 	GLuint *cylinderIndex;
 	int vertexNum;

@@ -5,12 +5,18 @@
 CylinderStack Stack_create() {
 	CylinderStack new = (CylinderStack) malloc(sizeof(CylinderStack));
     new->top = 0;
+    new->stk=(Cylinder*)malloc(sizeof(Cylinder)*MAX);
+    int i;
+    for(i=0;i<MAX;i++){
+    	new->stk[i]=NULL;
+    }
     return new;
 };
 
 void Stack_destroy(CylinderStack stack) {
 	int i;
 	for(i = 0; i < stack->top; i++) {
+		if(stack->stk[i]!=NULL)
 		cylinder_destroy(stack->stk[i]);
 	}
 	free(stack->stk);
@@ -18,9 +24,15 @@ void Stack_destroy(CylinderStack stack) {
 }
 
 void push(CylinderStack s, Cylinder c) {
-    if(s->top == (MAX - 1))
-        s->top = 0;
-    s->stk[s->top++] = c;
+	int i=0;
+    for(;i<MAX;i++){
+    	if(s->stk[i]==NULL){
+    		s->stk[i] = c;
+    		s->top++;
+    		break;
+    	}
+    }
+
 };
 
 Cylinder pop(CylinderStack s) {

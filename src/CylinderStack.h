@@ -6,7 +6,7 @@
 #define MAX 25
 
 struct strStack {
-    Cylinder stk[MAX];
+    Cylinder* stk;
     int top;
 };
 
