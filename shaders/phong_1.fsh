@@ -17,6 +17,7 @@ uniform LightBlock {
 
 in vec3 worldVertexPosition;
 in vec3 worldVertexNormal;
+in vec3 vertexColorVF;
 
 uniform vec3 cameraPosition;
 uniform vec3 ambientLight;
@@ -32,6 +33,7 @@ out vec4 pixelColor;
 void main() {
   vec3 n  = normalize(worldVertexNormal);
   vec3 tempPixelColor = ambientLight *  materialA;
+  tempPixelColor=vec3(tempPixelColor.x*vertexColorVF.x,tempPixelColor.y*vertexColorVF.y,tempPixelColor.z*vertexColorVF.z);
   vec3 l, r;
   float factorD, factorS;
   vec3 v = normalize(cameraPosition - worldVertexPosition);
@@ -42,7 +44,7 @@ void main() {
 	vec3 V=normalize(worldVertexPosition - lights[i].lightPosition);
 	float directionFactor=0.02;
 	float dist=length(worldVertexPosition - lights[i].lightPosition);
-	float attenuationF=1.0/(0.1+(dist*0.1));
+	float attenuationF=1.0/(0.01+(dist*0.05));
 	float dotDV=dot(D,V);
 	if(dotDV>=lights[i].cutoff){
 		if(dotDV<=lights[i].subcutoff){
@@ -56,6 +58,7 @@ void main() {
  	tempPixelColor += lights[i].lightColor * (materialD * factorD + materialS * factorS)*directionFactor*attenuationF;
   }
 
-  pixelColor = vec4(clamp(tempPixelColor, 0, 1), 1)*texture(mytexture,vertexTextCoordVF);
+  pixelColor = vec4(clamp(tempPixelColor, 0, 0.4), 1);
+  
 }
 

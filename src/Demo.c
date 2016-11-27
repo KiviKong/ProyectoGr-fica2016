@@ -33,10 +33,29 @@
 
 #define to_rads(a) (180 * a / M_PI)
 
-static GLuint programId, bgProgram, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
-		projMatrixLoc, viewMatrixLoc, vertexNormalLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
-		projMatrixLocBG, viewMatrixLocBG, textureLoc;
+typedef float vec3[3];
 
+static GLuint programId, lightProgramId, bgProgram, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
+		projMatrixLoc, viewMatrixLoc, vertexNormalLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
+		projMatrixLocBG, viewMatrixLocBG, vertexPosLocIl, vertexColLocIl, modelMatrixLocIl,
+		projMatrixLocIl, viewMatrixLocIl,textureLoc,vertexNormalLocIl,textureLocIl;
+static GLuint ambientLightLoc, materialALoc, materialDLoc;
+static GLuint materialSLoc, cameraPositionLoc;
+
+static vec3 ambientLight = { 0.9, 0.9, 0.9 };
+static vec3 materialA = { 0.9, 0.9, 0.9 };
+static vec3 materialD = { 0.4, 0.4, 0.4 };
+static vec3 materialS = { 0.2, 0.2, 0.2 };
+
+static float shipLightX = 0;
+static float shipLightY = 0;
+static float shipLightZ = 0;
+
+//                          Color    Pad  Position  exponent  direction cutoff	subcutoff  padding
+static float lights[] = { 1, 0, 0, 0, -500, 0, -15, 128, 0, 0, -1, 0.5, 0.86, 0.0,
+		0.0, 0.0, 1, 1, 1, 0, 0, 0, 0, 8, 0, 0, -1, 0.7071, 0.96, 0.0, 0.0,
+		0.0, 0, 1, 1, 1, 500, 0, -15, 128, 0, 0, -1, 0.7071, 0.92, 0.0, 0.0, 0.0 };
+static GLuint lightsBufferId;
 
 static Asteroid* asteroids;
 static CylinderStack stack;
@@ -107,11 +126,12 @@ static void createAsteroids() {
 static void bindAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
-		Asteroid_bind(asteroids[i], vertexPosLoc, vertexColLoc,vertexNormalLoc);
+		Asteroid_bind(asteroids[i], vertexPosLocIl, vertexColLocIl,vertexNormalLocIl);
 	}
 }
 
 static void drawAsteroids() {
+
 	short collision = 0;
 	for (iterator = 0; iterator < numAsteroids; iterator++) {
 		if (asteroids[iterator] != NULL) {
@@ -140,13 +160,13 @@ static void drawAsteroids() {
 					updateAsteroidZ(asteroids[iterator],velocity));
 
 			rotateX(&csMat, angle + 50);
-			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, csMat.values);
+			glUniformMatrix4fv(modelMatrixLocIl, 1, GL_TRUE, csMat.values);
 			if (collision == 1) {
 				Asteroid_destroy(asteroids[iterator]);
 				asteroids[iterator] = NULL;
 				asteroids[iterator]=create_asteroid2((rand() % 10) + 1,20,20);
 				setVelAsteroid(asteroids[iterator], (rand() % 5) + 2);
-				Asteroid_bind(asteroids[iterator],vertexPosLoc,vertexColLoc,vertexNormalLoc);
+				Asteroid_bind(asteroids[iterator],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);
 
 			}
 			if (asteroids[iterator] != NULL) {
@@ -268,6 +288,46 @@ static void initShaders() {
 	projMatrixLocBG = glGetUniformLocation(bgProgram, "projMatrix");
 	viewMatrixLocBG = glGetUniformLocation(bgProgram, "viewMatrix");
 	textureLoc = glGetAttribLocation(bgProgram, "texCoord");
+
+	GLuint IlvShader=compileShader("shaders/phong_1.vsh",GL_VERTEX_SHADER);
+	if (!shaderCompiled(IlvShader))
+			return;
+	GLuint IlfShader=compileShader("shaders/phong_1.fsh",GL_FRAGMENT_SHADER);
+	if (!shaderCompiled(IlfShader))
+			return;
+	lightProgramId = glCreateProgram();
+	glAttachShader(lightProgramId, IlvShader);
+	glAttachShader(lightProgramId, IlfShader);
+	glLinkProgram(lightProgramId);
+	vertexPosLocIl = glGetAttribLocation(lightProgramId, "vertexPosition");
+	vertexColLocIl = glGetAttribLocation(lightProgramId, "vertexColor");
+	modelMatrixLocIl = glGetUniformLocation(lightProgramId, "modelMatrix");
+	projMatrixLocIl = glGetUniformLocation(lightProgramId, "projMatrix");
+	viewMatrixLocIl = glGetUniformLocation(lightProgramId, "viewMatrix");
+	vertexNormalLocIl=glGetAttribLocation(lightProgramId,"vertexNormal");
+	textureLocIl = glGetAttribLocation(lightProgramId, "vertexTextCoord");
+	ambientLightLoc = glGetUniformLocation(lightProgramId, "ambientLight");
+	materialALoc = glGetUniformLocation(lightProgramId, "materialA");
+	materialDLoc = glGetUniformLocation(lightProgramId, "materialD");
+	materialSLoc = glGetUniformLocation(lightProgramId, "materialS");
+	cameraPositionLoc = glGetUniformLocation(lightProgramId, "cameraPosition");
+
+}
+static void initLight() {
+	glUseProgram(lightProgramId);
+	glUniform3fv(ambientLightLoc, 1, ambientLight);
+
+	glUniform3fv(materialALoc, 1, materialA);
+	glUniform3fv(materialDLoc, 1, materialD);
+	glUniform3fv(materialSLoc, 1, materialS);
+
+	glGenBuffers(1, &lightsBufferId);
+	glBindBuffer(GL_UNIFORM_BUFFER, lightsBufferId);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(lights), lights, GL_DYNAMIC_DRAW);
+
+	GLuint uniformBlockIndex = glGetUniformBlockIndex(lightProgramId, "LightBlock");
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lightsBufferId);
+	glUniformBlockBinding(lightProgramId, uniformBlockIndex, 0);
 }
 
 static void exitFunc(unsigned char key, int x, int y) {
@@ -572,6 +632,10 @@ static void display() {
 	translate(&shipMat, shipX, shipY, shipZ);
 	rotateZ(&shipMat, angleZ);
 	rotateX(&shipMat, angleY);
+	//asignar posicion a la luz de la nave
+	shipLightX=shipX;
+	shipLightY=shipY;
+	shipLightZ=shipZ;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -605,8 +669,26 @@ static void display() {
 
 	drawLaserBeams();
 
+
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	nave_draw(n1);
+
+	glUseProgram(lightProgramId);
+	//envio fuentes de luz
+	lights[20] = cameraX;
+	lights[21] = -cameraY;
+	lights[22] = cameraZ;
+	glBindBuffer(GL_UNIFORM_BUFFER, lightsBufferId);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(lights), lights, GL_DYNAMIC_DRAW);
+	GLuint uniformBlockIndex = glGetUniformBlockIndex(lightProgramId, "LightBlock");
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, lightsBufferId);
+	glUniformBlockBinding(lightProgramId, uniformBlockIndex, 0);
+
+	glUniformMatrix4fv(projMatrixLocIl, 1, GL_TRUE, projMat.values);
+	glUniformMatrix4fv(viewMatrixLocIl, 1, GL_TRUE, view.values);
+
+	glUniform3f(cameraPositionLoc, shipX, shipX, shipZ);
+
 	drawAsteroids();
 
 	glutSwapBuffers();
@@ -714,6 +796,7 @@ int main(int argc, char **argv) {
 	glutSetCursor(GLUT_CURSOR_DESTROY);
 	glewInit();
 	initShaders();
+	initLight();
 	createShape();
 	glutMainLoop();
 
