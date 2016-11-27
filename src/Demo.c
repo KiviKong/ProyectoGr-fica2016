@@ -257,6 +257,7 @@ static void exitFunc(unsigned char key, int x, int y) {
 		case 32:
 			printf("=========\nENTER: (%f, %f, %f)\n=========\n", (shipX + cameraX), (shipY + cameraY), (shipZ + cameraZ));
 			shootNewLaser();
+			printf("\a");
 			break;
 		case 27:
 			glDeleteVertexArrays(1, va);
@@ -696,6 +697,7 @@ int main(int argc, char **argv) {
 	glutReshapeFunc(reshapeFunc);
 	glutSpecialFunc(startMotionFunc);
 	glutSpecialUpFunc(endMotionFunc);
+	glutSetCursor(GLUT_CURSOR_DESTROY);
 	glewInit();
 	initShaders();
 	createShape();
