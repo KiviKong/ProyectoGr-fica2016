@@ -3,7 +3,7 @@
 
 #include "Cylinder.h"
 
-#define MAX 5
+#define MAX 25
 
 struct strStack {
     Cylinder stk[MAX];

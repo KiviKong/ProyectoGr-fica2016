@@ -28,6 +28,8 @@
 #define Y 1
 #define Z 2
 
+#define log(a) printf("Log: %d\n", a);
+#define logs(s) printf("Log: %s\n", s);
 
 #define to_rads(a) (180 * a / M_PI)
 
@@ -159,6 +161,7 @@ static void drawAsteroids() {
 static void destroyAsteroids() {
 	int i;
 	for (i = 0; i < numAsteroids; i++) {
+		log(i)
 		Asteroid_destroy(asteroids[i]);
 	}
 }
@@ -185,7 +188,7 @@ static void shootNewLaser() {
 		col,				// float topColor[3]
 		(shipX + cameraX + dx),	// float coordX
 		(shipY - cameraY + dy),	// float coordY
-		(shipZ - 10)		// float coordZ
+		(shipZ + cameraZ - 15)		// float coordZ
 	);
 	cylinder_bind(new, vertexPosLoc, vertexColLoc);
 	push(stack, new);
@@ -195,10 +198,15 @@ static void drawLaserBeams() {
 	int i;
 	for(i = 0; i < stack->top; i++) {
 		Cylinder tmp = stack->stk[i];
-		mIdentity(&laserMat);
-		translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
-		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
-		cylinder_draw(tmp);
+		if(tmp->coord[Z] < -50) {
+			stack->top--;
+			cylinder_destroy(tmp);
+		} else {
+			mIdentity(&laserMat);
+			translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]--);
+			glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
+			cylinder_draw(tmp);
+		}
 	}
 }
 
