@@ -52,9 +52,17 @@ static float shipLightY = 0;
 static float shipLightZ = 0;
 
 //                          Color    Pad  Position  exponent  direction cutoff	subcutoff  padding
-static float lights[] = { 1, 0, 0, 0, -500, 0, -15, 128, 0, 0, -1, 0.5, 0.86, 0.0,
-		0.0, 0.0, 1, 1, 1, 0, 0, 0, 0, 8, 0, 0, -1, 0.7071, 0.96, 0.0, 0.0,
-		0.0, 0, 1, 1, 1, 500, 0, -15, 128, 0, 0, -1, 0.7071, 0.92, 0.0, 0.0, 0.0 };
+static float lights[] = {
+	1, 0.98, 0.7,	// Color
+	0,				// Padding
+	-500, 0, -15,	// Position
+	128,			// Exponent
+	0, 0, -1,		// Direction
+	0.05,			// Cutoff
+	0.2,			// Subcutoff
+	0.0,
+	0.0, 0.0, 1, 1, 1, 0, 0, 0, 0, 8, 0, 0, -1, 0.7071, 0.96, 0.0, 0.0,
+	0.0, 0, 1, 1, 1, 500, 0, -15, 128, 0, 0, -1, 0.7071, 0.92, 0.0, 0.0, 0.0 };
 static GLuint lightsBufferId;
 
 static Asteroid* asteroids;
@@ -168,7 +176,6 @@ static void drawAsteroids() {
 				asteroids[iterator]=create_asteroid2((rand() % 10) + 1,20,20);
 				setVelAsteroid(asteroids[iterator], (rand() % 5) + 2);
 				Asteroid_bind(asteroids[iterator],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);
-
 			}
 			if (asteroids[iterator] != NULL) {
 				Asteroid_draw(asteroids[iterator]);
