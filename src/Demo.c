@@ -64,7 +64,7 @@ static float lights[] = {
 	0.05,			// Cutoff
 	0.2,			// Subcutoff
 	0.0,
-	0.0, 0.0, 1, 1, 1, 0, 0, 0, 0, 8, 0, 0, -1, 0.7071, 0.96, 0.0, 0.0,
+	0.0, 0.0, 1, 1, 1, 0, 0, 0, 0, 8, 0, 0, -1, 0.95, 0.99, 0.0, 0.0,
 	0.0, 0, 1, 1, 1, 500, 0, -15, 128, 0, 0, -1, 0.7071, 0.92, 0.0, 0.0, 0.0 };
 static GLuint lightsBufferId;
 
@@ -861,9 +861,12 @@ static void display() {
 
 	glUseProgram(lightProgramId);
 	//envio fuentes de luz
-	lights[20] = cameraX;
-	lights[21] = -cameraY;
-	lights[22] = cameraZ;
+	lights[20] = cameraX+shipX;
+	lights[21] = -cameraY+shipY;
+	lights[22] = cameraZ+shipZ;
+	lights[24]= -sin((angleZ*M_PI)/180.0);
+	lights[25]= sin((angleY*M_PI)/180.0);
+	lights[26]=-1.0;
 	glBindBuffer(GL_UNIFORM_BUFFER, lightsBufferId);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(lights), lights, GL_DYNAMIC_DRAW);
 	GLuint uniformBlockIndex = glGetUniformBlockIndex(lightProgramId, "LightBlock");
@@ -873,7 +876,7 @@ static void display() {
 	glUniformMatrix4fv(projMatrixLocIl, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(viewMatrixLocIl, 1, GL_TRUE, view.values);
 
-	glUniform3f(cameraPositionLoc, shipX, shipX, shipZ);
+	glUniform3f(cameraPositionLoc, cameraX+shipX, -cameraY+shipY, cameraZ+shipZ);
 
 	drawAsteroids();
 
