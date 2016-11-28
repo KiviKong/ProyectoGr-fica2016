@@ -39,19 +39,19 @@ void main() {
   vec3 v = normalize(cameraPosition - worldVertexPosition);
 
   int i;
-  for(i = 0; i < N; i++) {  
+  for(i = 0; i < N; i++) {
   	vec3 D=normalize(lights[i].lightDirection);
 	vec3 V=normalize(worldVertexPosition - lights[i].lightPosition);
 	float directionFactor=0.02;
 	float dist=length(worldVertexPosition - lights[i].lightPosition);
-	float attenuationF=1.0/(0.01+(dist*0.05));
+	float attenuationF=5/(0.01+(dist*0.05));
 	float dotDV=dot(D,V);
 	if(dotDV>=lights[i].cutoff){
 		if(dotDV<=lights[i].subcutoff){
 			directionFactor=(dotDV-lights[i].cutoff)/(lights[i].subcutoff-lights[i].cutoff);
 		}else directionFactor=1.0;
-	}  
-  	l = normalize(lights[i].lightPosition - worldVertexPosition);  	
+	}
+  	l = normalize(lights[i].lightPosition - worldVertexPosition);
   	factorD = clamp(dot(l, n), 0, 1);
   	r = normalize((2 * n)  * dot(n, l) - l);
   	factorS = clamp(pow(dot(r, v), lights[i].exponent), 0, 1);
@@ -59,6 +59,5 @@ void main() {
   }
 
   pixelColor = vec4(clamp(tempPixelColor, 0, 0.4), 1);
-  
-}
 
+}

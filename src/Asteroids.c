@@ -35,8 +35,7 @@ Asteroid Asteroid_create(float r, int lats, int longs, int feo) {
 	float random0, random1;
 	for (i = 0; i < lats; i++) {
 		ruido = rand() % 5;
-		ruido /= 100.0;
-		ruido = 1 - ruido;
+		ruido = 2.5 - ruido;
 		//ruido=1;
 
 		lat0 = M_PI * (-0.5 + (float) (i - 1) / lats);
@@ -142,12 +141,12 @@ Asteroid create_asteroid2(float radius, int P, int M){
 
 	//	F�rmulas de Bessel
 		GLfloat inc_theta = 2 * M_PI / M;
-		int i = 0, j = 0, p, m;
+		int i = 0, p, m;
 		for(p = 1; p <= P + 1; p ++) {
 			theta = 0;
 			for(m = 1; m <= M; m ++) {
 				random1 = (((rand() % 2) + 9) / 10.0);
-				ruido = rand() % 5;
+				ruido = rand() % 25;
 						ruido /= 100.0;
 						ruido = 1 - ruido;
 				GLfloat x = sin(phi) * cos(theta);
@@ -158,9 +157,13 @@ Asteroid create_asteroid2(float radius, int P, int M){
 				new->vertexPos[i + 1] = radius * y*random1;
 				new->vertexPos[i + 2] = radius * z*random1;
 
-				new->vertexNorm[i    ] = new->vertexPos[i];
-				new->vertexNorm[i + 1] = new->vertexPos[i+1];
-				new->vertexNorm[i + 2] = new->vertexPos[i+2];
+				// new->vertexNorm[i    ] = new->vertexPos[i];
+				// new->vertexNorm[i + 1] = new->vertexPos[i+1];
+				// new->vertexNorm[i + 2] = new->vertexPos[i+2];
+
+				new->vertexNorm[i    ] = new->vertexPos[i] * ruido;
+				new->vertexNorm[i + 1] = new->vertexPos[i+1] * ruido;
+				new->vertexNorm[i + 2] = new->vertexPos[i+2] * ruido;
 
 				new->vertexCol[i    ] = (colorR) * ruido;
 				new->vertexCol[i + 1] = (colorG) * ruido;
