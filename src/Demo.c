@@ -34,6 +34,9 @@
 #define to_rads(a) (180 * a / M_PI)
 
 typedef float vec3[3];
+typedef struct {
+	float x, y, z, w;
+} Vec4;
 
 static GLuint programId, lightProgramId, bgProgram, va[3], vertexPosLoc, vertexColLoc, modelMatrixLoc,
 		projMatrixLoc, viewMatrixLoc, vertexNormalLoc, vertexPosLocBG, vertexColLocBG, modelMatrixLocBG,
@@ -66,6 +69,7 @@ static Nave n1;
 static Mat4 projMat;
 static Mat4 shipMat;
 static Mat4 laserMat;
+static Mat4 view;
 
 static int extra = 0;
 
@@ -97,6 +101,11 @@ static float angleZ = 0;
 static float angleY = 0;
 static float velocity=1;
 static float laserSpeed=-2.0;
+
+static bool shoot=0;
+static float laserX=0;
+static float laserY=0;
+static float laserZ=0;
 
 static float cameraX = 0;
 static float cameraY = 0;
@@ -137,8 +146,8 @@ static void drawAsteroids() {
 	for (iterator = 0; iterator < numAsteroids; iterator++) {
 		if (asteroids[iterator] != NULL) {
 			mIdentity(&csMat);
-			if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7))
-					&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7))) {
+			if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7-((velocity-1)*3)))
+					&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7-((velocity-1)*3)))) {
 				collision = checkCollision(cameraX+shipX + 1, cameraX+shipX - 1,
 						-cameraY-shipY + .8, -cameraY-shipY - .8,
 						asteroids[iterator]->x + asteroids[iterator]->r,
@@ -195,10 +204,15 @@ static void initLaserBeams() {
 	stack = Stack_create();
 }
 
-static void shootNewLaser() {
+static void shootNewLaser(float posX,float posY,float posZ,float velX,float velY, float velZ) {
 	float col[] = {1, 1, 1};
 	float dx = (accion & left) ? -speed : (accion & right) ? speed : 0;
 	float dy = (accion & up) ? -speed : (accion & down) ? speed : 0;
+	if(cameraX>=limiteSX || cameraX<=limiteIX)
+		dx=0;
+	if(cameraY>=limiteSY || cameraY<=limiteInfY)
+		dy=0;
+
 	Cylinder new = cylinder_create (
 		10, 				// float length
 		0.2, 				// float bottomRadius
@@ -207,9 +221,12 @@ static void shootNewLaser() {
 		1,					// int stacks
 		col,				// float bottomColor[3]
 		col,				// float topColor[3]
-		(shipX + cameraX + dx),	// float coordX
-		(shipY - cameraY + dy),	// float coordY
-		(shipZ + cameraZ - 15)		// float coordZ
+		posX+velX+(dx*.5),	// float coordX
+		posY+velY+(dy*.5),	// float coordY
+		(posZ - 15),		// float coordZ
+		velX,						//velocidadX
+		velY,						//velocidadY
+		velZ						//velocidadZ
 	);
 	cylinder_bind(new, vertexPosLoc, vertexColLoc);
 	push(stack, new);
@@ -231,8 +248,8 @@ static void drawLaserBeams() {
 			} else {
 				for (iterator = 0; iterator < numAsteroids; iterator++) {
 					if(asteroids[iterator] != NULL)
-						if((asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) < (tmp->coord[2] + 5 - (laserSpeed/(velocity*1.0))))
-								&& (asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) > (tmp->coord[2] - 5 - (asteroids[iterator]->speed*velocity) - (laserSpeed/(velocity*1.0)))))
+						if((asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) < (tmp->coord[2] + 5 - (tmp->velZ/(velocity*1.0))))
+								&& (asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) > (tmp->coord[2] - 5 - (asteroids[iterator]->speed*velocity) - (tmp->velZ/(velocity*1.0)))))
 							collided = Asteroid_collide(asteroids[iterator], tmp);
 					if(collided) {
 						idColl = iterator;
@@ -241,7 +258,7 @@ static void drawLaserBeams() {
 				}
 				if(!collided) {
 					mIdentity(&laserMat);
-					translate(&laserMat, tmp->coord[X], tmp->coord[Y], tmp->coord[Z]+=(laserSpeed/(velocity*1.0)));
+					translate(&laserMat, tmp->coord[X]+=(tmp->velX/(velocity*1.0)), tmp->coord[Y]+=(tmp->velY/(velocity*1.0)), tmp->coord[Z]+=(tmp->velZ/(velocity*1.0)));
 					glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
 					cylinder_draw(tmp);
 				} else {
@@ -359,22 +376,151 @@ static void initLight() {
 	glUniformBlockBinding(lightProgramId, uniformBlockIndex, 0);
 }
 
-static void exitFunc(unsigned char key, int x, int y) {
+static void startKey(unsigned char key, int x, int y) {
 	switch (key) {
 		case 13:
 			s *= -1;
 			cameraAngle += 180 * s;
 			break;
 		case 32:
-			printf("=========\nENTER: (%f, %f, %f)\n=========\n", (shipX + cameraX), (shipY + cameraY), (shipZ + cameraZ));
-			shootNewLaser();
-			printf("\a");
+			accionacc |=acc;
 			break;
 		case 27:
 			glDeleteVertexArrays(1, va);
 			exit(0);
 			break;
+		case 65://a A
+		case 97:
+			accion |= left;
+			correctRight=0;
+			correctLeft=0;
+			break;
+		case 87://w W
+		case 119:
+			accion |= up;
+			correctDown=0;
+			correctUp=0;
+			break;
+		case 68://d D
+		case 100:
+			accion |= right;
+			correctLeft=0;
+			correctRight=0;
+			break;
+		case 83://s S
+		case 115:
+			accion |= down;
+			correctUp=0;
+			correctDown=0;
+
+			break;
 	}
+}
+
+static void endKey(unsigned char key, int x, int y){
+	if(key==32)
+		accionacc &= 0XFE;
+
+	if (key == 87 || key==119) { //arriba es  00000001
+			if((accion&down)!=down){
+			if(shipY<0){
+				correctUp = 1;
+			}else if(shipY>0){
+				correctDown = 1;
+			}
+			}
+			accion &= 0XFE;
+		} else if (key == 83 || key==115) { //abajo es  00000010
+			if((accion&up)!=up){
+			if(shipY<0){
+				correctUp = 1;
+			}else if(shipY>0){
+				correctDown = 1;
+			}
+		}
+			accion &= 0XFD;
+		} else if (key == 68 ||key==100) { //derecha es  000001000
+			if((accion&left)!=left){
+			if(shipX<0){
+				correctLeft = 1;
+			}else if(shipX>0){
+				correctRight = 1;
+			}
+			}
+			accion &= 0XFB;
+		} else if (key == 65 ||key==97) { //izquierda es  00001000
+			if((accion&right)!=right){
+			if(shipX<0){
+				correctLeft = 1;
+			}else if(shipX>0){
+				correctRight = 1;
+			}
+			}
+			accion &= 0XF7;
+		}
+}
+static void matXvec(Mat4 m, Vec4 v, Vec4* r){
+	r->x = (v.x * m.at[0][0]) + (v.y * m.at[0][1]) +
+			(v.z * m.at[0][2]) + (v.w * m.at[0][3]);
+	r->y = (v.x * m.at[1][0]) + (v.y * m.at[1][1]) +
+				(v.z * m.at[1][2]) + (v.w * m.at[1][3]);
+	r->z = (v.x * m.at[2][0]) + (v.y * m.at[2][1]) +
+				(v.z * m.at[2][2]) + (v.w * m.at[2][3]);
+	r->w = (v.x * m.at[3][0]) + (v.y * m.at[3][1]) +
+				(v.z * m.at[3][2]) + (v.w * m.at[3][3]);
+}
+
+static void normalize(Vec4* v) {
+	float magnitude = sqrt(
+			pow(v->x, 2) +
+			pow(v->y, 2) +
+			pow(v->z, 2) +
+			pow(v->w, 2)
+		);
+	v->x /= magnitude;
+	v->y /= magnitude;
+	v->z /= magnitude;
+	v->w /= magnitude;
+}
+
+static void mouseClick(int button, int state, int mx, int my){
+	if(state != GLUT_UP) return;
+
+		// ************************
+		// AQUÍ ESTÁ EL TRABAJO MÁS PESADO
+
+		float width = glutGet(GLUT_WINDOW_WIDTH);
+		float height = glutGet(GLUT_WINDOW_HEIGHT);
+
+		// Obtener coordenadas de dispositivo normalizado
+		float Pnx = (2 * mx / width) - 1;
+		float Pny = -1 * ((2 * my / height) - 1);
+
+		// Desproyectar
+		Mat4 MPI;
+		inverse(projMat, &MPI);
+		Vec4 Rn = {Pnx, Pny, -1, 0};
+		Vec4 Rv;
+		matXvec(MPI, Rn, &Rv);
+
+
+		// Omitir la cámara
+		Vec4 Rm;
+		Rv.z = -1;
+		Rv.w = 0;
+		Mat4 MVI;
+		inverse(view, &MVI);
+		matXvec(MVI, Rv, &Rm);
+		Rm.w = 0;
+		normalize(&Rm);
+		printf("(%f, %f, %f, %f\n)", Rm.x, Rm.y, Rm.z, Rm.w);
+		shoot=1;
+		//shootNewLaser(Rm.x*2.5,Rm.y*2.5,Rm.z*2);
+		laserX=Rm.x*2.5;
+		laserY=Rm.y*2.5;
+		laserZ=Rm.z*2;
+
+
 }
 
 static void timerFunc(int id) {
@@ -547,7 +693,6 @@ static void resetVelocity(){
 static void display() {
 
 	mIdentity(&csMat);
-	Mat4 view;
 	mIdentity(&view);
 	mIdentity(&shipMat);
 
@@ -666,6 +811,11 @@ static void display() {
 	shipLightY=shipY;
 	shipLightZ=shipZ;
 
+	if(shoot){
+		shoot=0;
+		shootNewLaser(cameraX+shipX,-cameraY+shipY,cameraZ+shipZ,laserX,laserY,laserZ);
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	translate(&csMat, -3, 0, -9);
@@ -727,10 +877,11 @@ static void startMotionFunc(int key, int x, int y) {
 	motion = key;
 
 	if(key==GLUT_KEY_SHIFT_L||key=='A'){
-		accionacc |=acc;
+		accionacc |=deacc;
+
 		//accionacc &= 0XFD;
 	}if(key==GLUT_KEY_SHIFT_R||key=='S'){
-		accionacc |=deacc;
+		accionacc |=acc;
 		//accionacc &= 0XFE;
 	}
 	if (key == GLUT_KEY_RIGHT ) {
@@ -758,9 +909,9 @@ static void startMotionFunc(int key, int x, int y) {
 
 static void endMotionFunc(int key, int x, int y) {
 	if(key==GLUT_KEY_SHIFT_L)
-		accionacc &= 0XFE;
-	if(key==GLUT_KEY_SHIFT_R)
 		accionacc &= 0XFD;
+	if(key==GLUT_KEY_SHIFT_R)
+		accionacc &= 0XFE;
 
 	if (key == GLUT_KEY_UP) { //arriba es  00000001
 		if((accion&down)!=down){
@@ -818,10 +969,12 @@ int main(int argc, char **argv) {
 
 	glutCreateWindow("Demo proyecto final");
 	glutDisplayFunc(display);
-	glutKeyboardFunc(exitFunc);
+	glutKeyboardFunc(startKey);
+	glutKeyboardUpFunc(endKey);
 	glutReshapeFunc(reshapeFunc);
 	glutSpecialFunc(startMotionFunc);
 	glutSpecialUpFunc(endMotionFunc);
+	glutMouseFunc(mouseClick);
 	glutSetCursor(GLUT_CURSOR_DESTROY);
 	glewInit();
 	initShaders();

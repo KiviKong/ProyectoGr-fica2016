@@ -9,7 +9,7 @@
 
 
 Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
-		int slices, int stacks, float bottomColor[3], float topColor[3], float coordX, float coordY, float coordZ) {
+		int slices, int stacks, float bottomColor[3], float topColor[3], float coordX, float coordY, float coordZ,float velX,float velY, float velZ) {
 	Cylinder new = (Cylinder) malloc(sizeof(struct strCylinder));
 	new->vertexNum = ((slices * 2) + 2) * stacks * 3;
 	new->indexNum = (((slices * 2) + 2) * stacks) + stacks-1;
@@ -19,6 +19,9 @@ Cylinder cylinder_create(float length, float bottomRadius, float topRadius,
 	new->coord[0] = coordX;
 	new->coord[1] = coordY;
 	new->coord[2] = coordZ;
+	new->velX=velX;
+	new->velY=velY;
+	new->velZ=velZ;
 
 
 	float lengthChange = length / stacks; //cambio de altura para cada stack

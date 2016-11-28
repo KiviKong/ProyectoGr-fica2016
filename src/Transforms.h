@@ -10,18 +10,18 @@
 
 #include "Mat4.h"
 
-void translate(Mat4*,float,float,float);
-void rotateX(Mat4*,float);
-void rotateY(Mat4*,float);
-void rotateZ(Mat4*,float);
-void scale(Mat4*,float,float,float);
+void translate(Mat4*, float, float, float);
+void rotateX  (Mat4*, float);
+void rotateY  (Mat4*, float);
+void rotateZ  (Mat4*, float);
+void scale    (Mat4*, float, float, float);
+void setOrtho (Mat4*, float left, float right, float bottom, float top, float near, float far);
+void setPerspective(Mat4* matrix, float fovy,  float aspect, float nearZ, float farZ);
+void inverse(Mat4 s, Mat4* t);
 
-void loadIdentity(Mat4* toIdentity);
-void pushMatrix(Mat4* m);
-int popMatrix(Mat4* popped);
+void loadIdentity(Mat4*);
+void pushMatrix(Mat4*);
+int  popMatrix(Mat4*);
 
-void setOrtho(Mat4* projMatrix, float left, float right, float bottom,
-		float top, float near, float far);
-void setPerspective(Mat4* m,float fovy,float aspect, float nearz, float farz);
 
 #endif /* TRANSFORMS_H_ */
