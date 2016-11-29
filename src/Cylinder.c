@@ -111,20 +111,19 @@ void cylinder_bind(Cylinder c, GLuint vLoc, GLuint cLoc) {
 }
 
 void cylinder_destroy(Cylinder c) {
-	printf("destroyed\n");
 	glDeleteVertexArrays(1,c->cylinderIndex);
 	glDeleteBuffers(1,c->indexBufferId);
-	printf("delete destroy\n");
+
 	free(c->vertexPos);
-	printf("pos destroy\n");
+
 	free(c->vertexCol);
-	printf("col destroy\n");
+
 	free(c->cylinderIndex);
-	printf("indcyl destroy\n");
+
 	free(c->indexBufferId);
-	printf("ind destroy\n");
+
 	free(c);
-	printf("com destroy\n");
+
 }
 
 void cylinder_draw(Cylinder c) {

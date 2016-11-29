@@ -24,12 +24,14 @@ struct strAsteroid {
 	GLuint *AsteroidIndex;
 	int vertexNum;
 	int indexNum;
+	int vertexColNum;
 	GLuint vertexId;
 	GLuint* indexBufferId;
 	float x, y, z, speed;
 	int lats;
 	int longs;
 	float r;
+	int hp;
 
 };
 typedef struct strAsteroid* Asteroid;
@@ -41,6 +43,7 @@ void Asteroid_draw(Asteroid);
 float updateAsteroidZ(Asteroid a,float velocity);
 void setVelAsteroid(Asteroid a, float vel);
 bool Asteroid_collide(Asteroid a, Cylinder c);
+void resetAsteroidZ(Asteroid new);
 
 
 #endif /* ASTEROIDS_H_ */

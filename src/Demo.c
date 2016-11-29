@@ -124,6 +124,9 @@ static float anglespeed = 1;
 static float cameraAngleY = 0;
 static float aspect;
 
+static bool gameOver=0;
+static bool startGame=0;
+
 // =================================== //
 // 				ASTEROIDS			   //
 // =================================== //
@@ -137,6 +140,7 @@ static void createAsteroids() {
 		randRadio = (rand() % 10) + 1;
 		asteroids[i]=create_asteroid2(randRadio,20,20);
 		setVelAsteroid(asteroids[i], randVel);
+		printf("create %d",i);
 	}
 
 }
@@ -180,6 +184,7 @@ static void drawAsteroids() {
 			rotateX(&csMat, angle + 50);
 			glUniformMatrix4fv(modelMatrixLocIl, 1, GL_TRUE, csMat.values);
 			if (collision == 1) {
+				n1->hp--;
 				Asteroid_destroy(asteroids[iterator]);
 				asteroids[iterator] = NULL;
 				asteroids[iterator]=create_asteroid2((rand() % 10) + 1,20,20);
@@ -200,7 +205,9 @@ static void destroyAsteroids() {
 	for (i = 0; i < numAsteroids; i++) {
 		log(i)
 		Asteroid_destroy(asteroids[i]);
+		asteroids[i]=NULL;
 	}
+	free(asteroids);
 }
 
 
@@ -209,6 +216,7 @@ static void destroyAsteroids() {
 // =================================== //
 static void initLaserBeams() {
 	stack = Stack_create();
+	printf("createbeams");
 }
 
 static void shootNewLaser(float posX,float posY,float posZ,float velX,float velY, float velZ) {
@@ -246,7 +254,6 @@ static void drawLaserBeams() {
 	for(i = 0; i < 25; i++) {//25 pornumero maximo de disparos segun stack
 
 		if(stack->stk[i] != NULL) {
-			printf("aqqui");
 			Cylinder tmp = stack->stk[i];
 			if(tmp->coord[Z] < -200) {
 				stack->top--;
@@ -266,17 +273,27 @@ static void drawLaserBeams() {
 				if(!collided) {
 					mIdentity(&laserMat);
 					translate(&laserMat, tmp->coord[X]+=(tmp->velX/(velocity*1.0)), tmp->coord[Y]+=(tmp->velY/(velocity*1.0)), tmp->coord[Z]+=(tmp->velZ/(velocity*1.0)));
+
+					rotateY(&laserMat,(atan((tmp->velX/5)/(tmp->velZ/4)))/M_PI);
+					rotateX(&laserMat,-(atan((tmp->velY/5)/(tmp->velZ/4)))/M_PI);
+
 					glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
 					cylinder_draw(tmp);
 				} else {
 					printf("colision con asteroide");
 					cylinder_destroy(tmp);
 					stack->stk[i]=NULL;
+					printf("asteroidhp %d\n",asteroids[idColl]->hp);
+					asteroids[idColl]->hp-=1;
+					printf("asteroidhp %d\n",asteroids[idColl]->hp);
+					if(asteroids[idColl]->hp<=0){
 					Asteroid_destroy(asteroids[idColl]);
 					asteroids[idColl] = NULL;
 					asteroids[idColl]=create_asteroid2((rand() % 10) + 1,20,20);
 					setVelAsteroid(asteroids[idColl], (rand() % 5) + 2);
 					Asteroid_bind(asteroids[idColl],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);
+					collided=0;
+					}
 				}
 			}
 		}
@@ -285,6 +302,7 @@ static void drawLaserBeams() {
 
 static void destroyLaserBeams() {
 	Stack_destroy(stack);
+	printf("destroyedbeams");
 }
 
 // =================================== //
@@ -385,9 +403,22 @@ static void initLight() {
 
 static void startKey(unsigned char key, int x, int y) {
 	switch (key) {
+	case 82:
+	case 114:
+		if(gameOver){
+			gameOver=false;
+			n1->hp=5;
+			startGame=true;
+			int i;
+			for(i=0;i<numAsteroids;i++){
+				resetAsteroidZ(asteroids[i]);
+			}
+		}
+
+		break;
 		case 13:
-			s *= -1;
-			cameraAngle += 180 * s;
+			if(!gameOver)
+			startGame=true;
 			break;
 		case 32:
 			accionacc |=acc;
@@ -523,9 +554,9 @@ static void mouseClick(int button, int state, int mx, int my){
 		printf("(%f, %f, %f, %f\n)", Rm.x, Rm.y, Rm.z, Rm.w);
 		shoot=1;
 		//shootNewLaser(Rm.x*2.5,Rm.y*2.5,Rm.z*2);
-		laserX=Rm.x*2.5;
-		laserY=Rm.y*2.5;
-		laserZ=Rm.z*2;
+		laserX=Rm.x*5;
+		laserY=Rm.y*5;
+		laserZ=Rm.z*4;
 
 
 }
@@ -698,7 +729,8 @@ static void resetVelocity(){
 // =================================== //
 
 static void display() {
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	mIdentity(&csMat);
 	mIdentity(&view);
 	mIdentity(&shipMat);
@@ -818,6 +850,7 @@ static void display() {
 	shipLightY=shipY;
 	shipLightZ=shipZ;
 
+
 	if(shoot){
 		shoot=0;
 		shootNewLaser(cameraX+shipX,-cameraY+shipY,cameraZ+shipZ,laserX,laserY,laserZ);
@@ -849,6 +882,7 @@ static void display() {
 	// glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
 	BackgroundDraw(background);
 
+
 	glUseProgram(programId);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
@@ -856,8 +890,9 @@ static void display() {
 	drawLaserBeams();
 
 
-	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
-	nave_draw(n1);
+
+
+
 
 	glUseProgram(lightProgramId);
 	//envio fuentes de luz
@@ -880,89 +915,45 @@ static void display() {
 
 	drawAsteroids();
 
+	glUseProgram(programId);
+	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
+	nave_draw(n1);
+
+	if(n1->hp<=0){
+		gameOver=true;
+		startGame=false;
+	}
+
 	glutSwapBuffers();
+}
+
+static void displayChoice(){
+	if(gameOver){
+
+	}
+	if(startGame){
+		display();
+	}
+
 }
 
 static void startMotionFunc(int key, int x, int y) {
 	motion = key;
 
+
 	if(key==GLUT_KEY_SHIFT_L||key=='A'){
 		accionacc |=deacc;
 
 		//accionacc &= 0XFD;
-	}if(key==GLUT_KEY_SHIFT_R||key=='S'){
-		accionacc |=acc;
-		//accionacc &= 0XFE;
-	}
-	if (key == GLUT_KEY_RIGHT ) {
-		accion |= right;
-		correctLeft=0;
-		correctRight=0;
-
-	} else if (key == GLUT_KEY_LEFT ) {
-		accion |= left;
-		correctRight=0;
-		correctLeft=0;
-
-	} else if (key == GLUT_KEY_DOWN) {
-		accion |= down;
-		correctUp=0;
-		correctDown=0;
-
-	} else if (key == GLUT_KEY_UP) {
-		accion |= up;
-		correctDown=0;
-		correctUp=0;
-
-	}
-}
+	}}
 
 static void endMotionFunc(int key, int x, int y) {
 	if(key==GLUT_KEY_SHIFT_L)
 		accionacc &= 0XFD;
-	if(key==GLUT_KEY_SHIFT_R)
-		accionacc &= 0XFE;
-
-	if (key == GLUT_KEY_UP) { //arriba es  00000001
-		if((accion&down)!=down){
-		if(shipY<0){
-			correctUp = 1;
-		}else if(shipY>0){
-			correctDown = 1;
-		}
-		}
-		accion &= 0XFE;
-	} else if (key == GLUT_KEY_DOWN) { //abajo es  00000010
-		if((accion&up)!=up){
-		if(shipY<0){
-			correctUp = 1;
-		}else if(shipY>0){
-			correctDown = 1;
-		}
+	motion=0;
 	}
-		accion &= 0XFD;
-	} else if (key == GLUT_KEY_RIGHT) { //derecha es  000001000
-		if((accion&left)!=left){
-		if(shipX<0){
-			correctLeft = 1;
-		}else if(shipX>0){
-			correctRight = 1;
-		}
-		}
-		accion &= 0XFB;
-	} else { //izquierda es  00001000
-		if((accion&right)!=right){
-		if(shipX<0){
-			correctLeft = 1;
-		}else if(shipX>0){
-			correctRight = 1;
-		}
-		}
-		accion &= 0XF7;
-	}
-
-	motion = 0;
-}
 
 
 // =================================== //
@@ -978,7 +969,7 @@ int main(int argc, char **argv) {
 	glutTimerFunc(50, timerFunc, 1);
 
 	glutCreateWindow("Demo proyecto final");
-	glutDisplayFunc(display);
+	glutDisplayFunc(displayChoice);
 	glutKeyboardFunc(startKey);
 	glutKeyboardUpFunc(endKey);
 	glutReshapeFunc(reshapeFunc);

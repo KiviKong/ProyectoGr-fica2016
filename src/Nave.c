@@ -73,65 +73,65 @@ float vertexPos[156]={//parte frontal, parte trasera, alas, motores
 
 
 	};
-	float vertexCol[156]={
-			0,0,1,	//frontal1
-						0.5,0,0, //frontal2
-						0,0,1, //frontal3
-						0,0.5,0, //frontal4
-						0,0,1,//frontal5
-						0.5,0,0,//frontal6
-						0,0,1,//frontal7
-						0,0.5,0,//frontal8
-						0,0,1,//frontal9
-						0.5,0,0,//frontal10
+	float vertexCol[208]={//52 vertices 156 en total
+			0,0,1,0.3,	//frontal1
+						0.5,0,0,0.3, //frontal2
+						0,0,1,0.3, //frontal3
+						0,0.5,0,0.3, //frontal4
+						0,0,1,0.3,//frontal5
+						0.5,0,0,0.3,//frontal6
+						0,0,1,0.3,//frontal7
+						0,0.5,0,0.3,//frontal8
+						0,0,1,0.3,//frontal9
+						0.5,0,0,0.3,//frontal10
 									//reinicio1
-						0.5,0,0,//trasera1
-						0.3,0,.3,//trasera2
-						0,0.5,0,//trasera3
-						0,0.3,0.3,//trasera4
-						0.5,0,0,//trasera5
-						0.3,0,0.3,//trasera6
-						0,0.5,0,//trasera7
-						0,0.3,0.3,//trasera8
-						0.5,0,0,//trasera9
-						0.3,0,0.3,//trasera10
+						0.5,0,0,0.3,//trasera1
+						0.3,0,.3,0.3,//trasera2
+						0,0.5,0,0.3,//trasera3
+						0,0.3,0.3,0.3,//trasera4
+						0.5,0,0,0.3,//trasera5
+						0.3,0,0.3,0.3,//trasera6
+						0,0.5,0,0.3,//trasera7
+						0,0.3,0.3,0.3,//trasera8
+						0.5,0,0,0.3,//trasera9
+						0.3,0,0.3,0.3,//trasera10
 									//reinicio2
-						0.3,0,0.3,//trasera11
-						0,0.3,0.3,//trasera12
-						0.3,0,0.3,//trasera13
-						0,0.3,0.3,//trasera14
+						0.3,0,0.3,0.3,//trasera11
+						0,0.3,0.3,0.3,//trasera12
+						0.3,0,0.3,0.3,//trasera13
+						0,0.3,0.3,0.3,//trasera14
 									//reinicio3
-						0.5,0,0,//alaA1
-						0.8,0,0.3,//alaA2
-						0.5,0,0,//alaA3
-						1,0.8,0,//alaA4
-						0.5,0,0,//alaA5
-						0.8,0,0.3,//alaA6
-						0.5,0,0,//alaA7
-						1,.8,0,//alaA8
-						0.5,0,0,//alaA9
-						0.8,0,0.3,//alaA10
+						0.5,0,0,0.3,//alaA1
+						0.8,0,0.3,0.3,//alaA2
+						0.5,0,0,0.3,//alaA3
+						1,0.8,0,0.3,//alaA4
+						0.5,0,0,0.3,//alaA5
+						0.8,0,0.3,0.3,//alaA6
+						0.5,0,0,0.3,//alaA7
+						1,.8,0,0.3,//alaA8
+						0.5,0,0,0.3,//alaA9
+						0.8,0,0.3,0.3,//alaA10
 								//reinicio4
-						0.8,0,0.3,//alaA11
-						1,.8,0,//alaA12
-						.8,0,.3,//alaA13
-						1,0.8,0,//alaA14
+						0.8,0,0.3,0.3,//alaA11
+						1,.8,0,0.3,//alaA12
+						.8,0,.3,0.3,//alaA13
+						1,0.8,0,0.3,//alaA14
 								//reinicio5
-						0.5,0,0,//alaB1
-						0.8,0,0.3,//alaB2
-						0.5,0,0,//alaB3
-						1.0,.8,0,//alaB4
-						0.5,0,0,//alaB5
-						0.8,0,0.3,//alaB6
-						0.5,0,0,//alaB7
-						1,.8,0,//alaB8
-						0.5,0,0,//alaB9
-						0.8,0,0.3,//alaB10
+						0.5,0,0,0.3,//alaB1
+						0.8,0,0.3,0.3,//alaB2
+						0.5,0,0,0.3,//alaB3
+						1.0,.8,0,0.3,//alaB4
+						0.5,0,0,0.3,//alaB5
+						0.8,0,0.3,0.3,//alaB6
+						0.5,0,0,0.3,//alaB7
+						1,.8,0,0.3,//alaB8
+						0.5,0,0,0.3,//alaB9
+						0.8,0,0.3,0.3,//alaB10
 								//reinicio6
-						0.8,0,0.3,//alaB11
-						1,.8,0,//alaB12
-						.8,0,.3,//alaB13
-						1,.8,0//alaB14
+						0.8,0,0.3,0.3,//alaB11
+						1,.8,0,0.3,//alaB12
+						.8,0,.3,0.3,//alaB13
+						1,.8,0,0.3//alaB14
 								//reinicio7
 	};
 	GLuint naveIndex[58]={
@@ -145,6 +145,7 @@ float vertexPos[156]={//parte frontal, parte trasera, alas, motores
 	};
 Nave nave_create() {
 	Nave new = (Nave) malloc(sizeof(struct strNave));
+	new->hp=5;
 	return new;
 }
 
@@ -161,9 +162,9 @@ void nave_bind(Nave n,GLuint vLoc, GLuint cLoc){
 		glEnableVertexAttribArray(vLoc);
 
 		glBindBuffer(GL_ARRAY_BUFFER, n->indexBufferId[1]);
-		glBufferData(GL_ARRAY_BUFFER, (vertexNum) * sizeof(float), vertexCol,
+		glBufferData(GL_ARRAY_BUFFER, (vertexNum+52) * sizeof(float), vertexCol,
 		GL_STATIC_DRAW);
-		glVertexAttribPointer(cLoc, 3, GL_FLOAT, 0, 0, 0);
+		glVertexAttribPointer(cLoc, 4, GL_FLOAT, 0, 0, 0);
 		glEnableVertexAttribArray(cLoc);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, n->indexBufferId[2]);
@@ -182,12 +183,15 @@ void nave_draw(Nave n){
 		//glEnable(GL_CULL_FACE);
 		//glFrontFace(GL_CW);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 		glBindVertexArray(n->vertexId);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, n->indexBufferId[2]);
 
 		//glDrawArrays(GL_TRIANGLE_STRIP,0,c->vertexNum*sizeof(float));
 		glDrawElements(GL_TRIANGLE_STRIP, indexNum, GL_UNSIGNED_INT, 0);
+
 }
 void printarraynave(Nave n){
 
