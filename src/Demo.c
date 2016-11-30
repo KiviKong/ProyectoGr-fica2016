@@ -18,6 +18,7 @@
 #include "Background.h"
 #include "LaserBeam.h"
 #include "Cylinder.h"
+#include "Hit.h"
 #include "CylinderStack.h"
 #include "Numbers.h"
 
@@ -74,6 +75,7 @@ static CylinderStack stack;
 static Background background;
 static Background titleScreen;
 static Background gameOverScreen;
+static Hitstun hit;
 static Numbers number;
 static int iterator;
 static Mat4 csMat;
@@ -194,6 +196,7 @@ static void drawAsteroids() {
 			}
 			glUniformMatrix4fv(modelMatrixLocIl, 1, GL_TRUE, csMat.values);
 			if (collision == 1) {
+				ResetAlpha(hit);
 				n1->hp--;
 				Asteroid_destroy(asteroids[iterator]);
 				asteroids[iterator] = NULL;
@@ -620,6 +623,8 @@ static void createShape() {
 
 	n1 = nave_create();
 	nave_bind(n1, vertexPosLoc, vertexColLoc);
+	hit=HitCreate();
+	HitBind(hit, vertexPosLoc, vertexColLoc);
 
 }
 
@@ -786,16 +791,31 @@ static void display() {
 		stop();
 	if((accionacc & acc)==0 &&(accionacc & deacc)==0&& velocity!=1.0)
 		resetVelocity();
-
+	if((accion & up) != 0&&(accion & down) != 0){
+		if(shipY>0){
+			correctDown=1;
+		}else if(shipY<0){
+			correctUp=1;
+		}
+	}else{
 	if ((accion & up) != 0) {
 		moveUp();
 	} if ((accion & down) != 0) {
 		moveDown();
 	}
+	}
+	if((accion & right) != 0&&(accion & left) != 0){
+		if(shipX>0){
+			correctRight=1;
+		}else if(shipX<0){
+			correctLeft=1;
+		}
+	}else{
 	if ((accion & right) != 0) {
 		rotateRight();
 	}if ((accion & left) != 0) {
 		rotateLeft();
+	}
 	}
 
 	if (correctUp) {
@@ -980,6 +1000,12 @@ static void display() {
 		nave_draw(n1);
 	}
 
+	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, identity.values);
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, identity.values);
+	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
+	MinusAlpha(hit);
+	HitDraw(hit);
+
 	if(n1->hp<=0){
 		gameOver=true;
 		startGame=false;
@@ -1041,11 +1067,12 @@ int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE);
-	//glutInitWindowSize(600, 600);
-	//glutInitWindowPosition(100, 100);
+	glutInitWindowSize(600, 600);
+	glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
 
 	glutCreateWindow("Demo proyecto final");
+	glutGameModeString("1024x768:32");
 	glutEnterGameMode();
 	glutDisplayFunc(displayChoice);
 	glutKeyboardFunc(startKey);
