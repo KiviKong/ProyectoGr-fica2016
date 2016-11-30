@@ -32,6 +32,8 @@ struct strAsteroid {
 	int longs;
 	float r;
 	int hp;
+	bool shot;
+	float scale;
 
 };
 typedef struct strAsteroid* Asteroid;

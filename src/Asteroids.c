@@ -23,6 +23,8 @@ Asteroid create_asteroid2(float radius, int P, int M){
 		new->longs = M;
 		new->r = radius;
 		new->hp=(rand()%2)+1;
+		new->shot=false;
+		new->scale=1.0;
 
 		float colorR = 0.2;
 		float colorG = 0.2;
