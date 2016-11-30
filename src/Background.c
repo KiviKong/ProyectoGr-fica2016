@@ -3,7 +3,7 @@
 #include "Background.h"
 #include "Utils.h"
 
-Background BackgroundCreate(float minX, float maxX, float minY, float maxY, float depth) {
+Background BackgroundCreate(float minX, float maxX, float minY, float maxY, float depth,int type) {
     Background bg = (Background) malloc(sizeof(struct strBg));
     bg->vertexPos[0] = minX;
     bg->vertexPos[1] = maxY;
@@ -20,7 +20,7 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
     bg->vertexPos[9] = maxX;
     bg->vertexPos[10] = minY;
     bg->vertexPos[11] = depth;
-
+    if(type==0){
     bg->textureArr[0] = 0;  // v
     bg->textureArr[1] = 5;  // u
 
@@ -32,11 +32,23 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
 
     bg->textureArr[6] = 5;  // v
     bg->textureArr[7] = 0;  // u
+    }else if(type==1){
+    	bg->textureArr[0] = -2;  // v
+    	bg->textureArr[1] = 1.5;  // u
 
+        bg->textureArr[2] = -2;  // u
+    	bg->textureArr[3] = -2.25;  // v
+
+   	    bg->textureArr[4] = 1;  // u
+   	    bg->textureArr[5] = 1.5;  // v
+
+   	    bg->textureArr[6] = 1;  // v
+   	    bg->textureArr[7] = -2.25;  // u
+    }
 
     int i = 0;
     for(i = 0; i < 12; i++) {
-        bg->vertexCol[i] = 0.5;
+        bg->vertexCol[i] = 0.9;
     }
     for (i = 0; i < 4; i++) {
         bg->indexArr[i] = i;
@@ -44,7 +56,7 @@ Background BackgroundCreate(float minX, float maxX, float minY, float maxY, floa
     return bg;
 };
 
-void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc) {
+void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc,int texture) {
     glGenVertexArrays(1, &b->vertexId);
     b->bufferId = (GLuint*) malloc(4 * sizeof(GLuint));
     glGenBuffers(4, b->bufferId);
@@ -89,7 +101,15 @@ void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc) {
     glEnableVertexAttribArray(tLoc);
 
 	glGenTextures(1, b->texture);
-    loadTexture("textures/space-bg.bmp", b->texture[0]);
+	if(texture==0)
+		loadTexture("textures/space-bg.bmp", b->texture[0]);
+	else if(texture==1)
+		loadTexture("textures/titlescreen.bmp", b->texture[0]);
+	else if(texture==2){
+		printf("texture loaded");
+		loadTexture("textures/gameover.bmp", b->texture[0]);
+		printf("texture loaded");
+	}
 };
 
 

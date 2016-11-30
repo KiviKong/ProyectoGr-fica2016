@@ -71,6 +71,8 @@ static GLuint lightsBufferId;
 static Asteroid* asteroids;
 static CylinderStack stack;
 static Background background;
+static Background titleScreen;
+static Background gameOverScreen;
 static int iterator;
 static Mat4 csMat;
 static Nave n1;
@@ -140,7 +142,7 @@ static void createAsteroids() {
 		randRadio = (rand() % 10) + 1;
 		asteroids[i]=create_asteroid2(randRadio,20,20);
 		setVelAsteroid(asteroids[i], randVel);
-		printf("create %d",i);
+		//printf("create %d",i);
 	}
 
 }
@@ -158,6 +160,7 @@ static void drawAsteroids() {
 	for (iterator = 0; iterator < numAsteroids; iterator++) {
 		if (asteroids[iterator] != NULL) {
 			mIdentity(&csMat);
+			if(!asteroids[iterator]->shot)
 			if ((asteroids[iterator]->z + asteroids[iterator]->speed < (cameraZ + 1 - 7-((velocity-1)*3)))
 					&& (asteroids[iterator]->z + asteroids[iterator]->speed > (cameraZ - 1 - asteroids[iterator]->speed - 7-((velocity-1)*3)))) {
 				collision = checkCollision(cameraX+shipX + 1, cameraX+shipX - 1,
@@ -166,7 +169,7 @@ static void drawAsteroids() {
 						asteroids[iterator]->x - asteroids[iterator]->r,
 						asteroids[iterator]->y + asteroids[iterator]->r,
 						asteroids[iterator]->y - asteroids[iterator]->r);
-				if (collision == 1) {
+				/*if (collision == 1) {
 					extra++;
 					printf("%d ", extra);
 					printf(" %f, %f, %f, %f, %f, %f, %f, %f\n", cameraX + 1,
@@ -175,13 +178,18 @@ static void drawAsteroids() {
 							asteroids[iterator]->x - asteroids[iterator]->r,
 							asteroids[iterator]->y + asteroids[iterator]->r,
 							asteroids[iterator]->y - asteroids[iterator]->r);
-				}
+				}*/
 
 			}
 			translate(&csMat, asteroids[iterator]->x, asteroids[iterator]->y,
 					updateAsteroidZ(asteroids[iterator],velocity));
 
 			rotateX(&csMat, angle + 50);
+			if(asteroids[iterator]->shot){
+				if(asteroids[iterator]->scale>0)
+				asteroids[iterator]->scale-=0.1;
+				scale(&csMat,asteroids[iterator]->scale,asteroids[iterator]->scale,asteroids[iterator]->scale);
+			}
 			glUniformMatrix4fv(modelMatrixLocIl, 1, GL_TRUE, csMat.values);
 			if (collision == 1) {
 				n1->hp--;
@@ -216,7 +224,7 @@ static void destroyAsteroids() {
 // =================================== //
 static void initLaserBeams() {
 	stack = Stack_create();
-	printf("createbeams");
+	//printf("createbeams");
 }
 
 static void shootNewLaser(float posX,float posY,float posZ,float velX,float velY, float velZ) {
@@ -280,20 +288,22 @@ static void drawLaserBeams() {
 					glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, laserMat.values);
 					cylinder_draw(tmp);
 				} else {
-					printf("colision con asteroide");
+					//printf("colision con asteroide");
 					cylinder_destroy(tmp);
 					stack->stk[i]=NULL;
-					printf("asteroidhp %d\n",asteroids[idColl]->hp);
+					//printf("asteroidhp %d\n",asteroids[idColl]->hp);
 					asteroids[idColl]->hp-=1;
-					printf("asteroidhp %d\n",asteroids[idColl]->hp);
-					if(asteroids[idColl]->hp<=0){
+					//printf("asteroidhp %d\n",asteroids[idColl]->hp);
+					//if(asteroids[idColl]->hp<=0){
+						asteroids[idColl]->shot=true;
+						/*
 					Asteroid_destroy(asteroids[idColl]);
 					asteroids[idColl] = NULL;
 					asteroids[idColl]=create_asteroid2((rand() % 10) + 1,20,20);
 					setVelAsteroid(asteroids[idColl], (rand() % 5) + 2);
-					Asteroid_bind(asteroids[idColl],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);
+					Asteroid_bind(asteroids[idColl],vertexPosLocIl,vertexColLocIl,vertexNormalLocIl);*/
 					collided=0;
-					}
+					//}
 				}
 			}
 		}
@@ -316,9 +326,30 @@ static void createBackground() {
 		max*1.5,  // maxX
 		-max*1.5, // minY
 		max*1.5,  // maxY
-		-1800	 // depth
+		-1800,	 // depth
+		0
 	);
-	BackgroundBind(background, vertexPosLocBG, vertexColLocBG, textureLoc);
+	BackgroundBind(background, vertexPosLocBG, vertexColLocBG, textureLoc,0);
+
+	titleScreen = BackgroundCreate(
+			-max*1.5, // minX
+			max*1.5,  // maxX
+			-max*1.5, // minY
+			max*1.5,  // maxY
+			-1800,	 // depth
+			1
+	);
+	BackgroundBind(titleScreen, vertexPosLocBG, vertexColLocBG, textureLoc,1);
+
+		gameOverScreen = BackgroundCreate(
+				-max*1.5, // minX
+				max*1.5,  // maxX
+				-max*1.5, // minY
+				max*1.5,  // maxY
+				-1800,	 // depth
+				1
+		);
+		BackgroundBind(gameOverScreen, vertexPosLocBG, vertexColLocBG, textureLoc,2);
 }
 
 
@@ -551,7 +582,7 @@ static void mouseClick(int button, int state, int mx, int my){
 		matXvec(MVI, Rv, &Rm);
 		Rm.w = 0;
 		normalize(&Rm);
-		printf("(%f, %f, %f, %f\n)", Rm.x, Rm.y, Rm.z, Rm.w);
+		//printf("(%f, %f, %f, %f\n)", Rm.x, Rm.y, Rm.z, Rm.w);
 		shoot=1;
 		//shootNewLaser(Rm.x*2.5,Rm.y*2.5,Rm.z*2);
 		laserX=Rm.x*5;
@@ -930,13 +961,31 @@ static void display() {
 }
 
 static void displayChoice(){
+	Mat4 temp;
 	if(gameOver){
-
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mIdentity(&temp);
+		glUseProgram(bgProgram);
+		glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
+		glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,temp.values);
+		glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, temp.values);
+		BackgroundDraw(gameOverScreen);
+		glutSwapBuffers();
 	}
 	if(startGame){
 		display();
 	}
+	if(!startGame&&!gameOver){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mIdentity(&temp);
+		glUseProgram(bgProgram);
+		glUniformMatrix4fv(projMatrixLocBG, 1, GL_TRUE, projMat.values);
+		glUniformMatrix4fv(modelMatrixLocBG, 1, GL_TRUE,temp.values);
+		glUniformMatrix4fv(viewMatrixLocBG, 1, GL_TRUE, temp.values);
+		BackgroundDraw(titleScreen);
+		glutSwapBuffers();
 
+	}
 }
 
 static void startMotionFunc(int key, int x, int y) {

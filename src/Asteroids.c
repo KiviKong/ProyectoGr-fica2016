@@ -168,6 +168,8 @@ float updateAsteroidZ(Asteroid a,float velocity) {
 
 
 	if (a->z >= 0){
+		a->shot=false;
+		a->scale=1.0;
 		a->x = rand() % 180 + (-90);
 		a->y = rand() % 180 + (-90);
 		return a->z = -2000;

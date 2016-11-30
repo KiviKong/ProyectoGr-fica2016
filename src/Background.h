@@ -20,8 +20,8 @@ struct strBg {
 
 typedef struct strBg* Background;
 
-Background BackgroundCreate(float minX, float maxX, float minY, float maxY, float depth);
-void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc);
+Background BackgroundCreate(float minX, float maxX, float minY, float maxY, float depth,int type);
+void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc,int texture);
 void BackgroundBindTextures(Background b);
 void BackgroundDraw(Background b);
 void BackgroundDestroy(Background b);
