@@ -20,6 +20,7 @@ struct strNave {
 	GLuint vertexId;
 	GLuint* indexBufferId;
 	int hp;
+	unsigned int puntuacion;
 
 };
 typedef struct strNave* Nave;

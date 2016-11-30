@@ -106,9 +106,7 @@ void BackgroundBind(Background b, GLuint vLoc, GLuint cLoc, GLuint tLoc,int text
 	else if(texture==1)
 		loadTexture("textures/titlescreen.bmp", b->texture[0]);
 	else if(texture==2){
-		printf("texture loaded");
 		loadTexture("textures/gameover.bmp", b->texture[0]);
-		printf("texture loaded");
 	}
 };
 

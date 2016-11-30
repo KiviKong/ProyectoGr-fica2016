@@ -146,6 +146,7 @@ float vertexPos[156]={//parte frontal, parte trasera, alas, motores
 Nave nave_create() {
 	Nave new = (Nave) malloc(sizeof(struct strNave));
 	new->hp=5;
+	new->puntuacion=0;
 	return new;
 }
 

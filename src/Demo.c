@@ -19,6 +19,7 @@
 #include "LaserBeam.h"
 #include "Cylinder.h"
 #include "CylinderStack.h"
+#include "Numbers.h"
 
 #define numAsteroids 2000
 #define maxDepth (-2000)
@@ -73,6 +74,7 @@ static CylinderStack stack;
 static Background background;
 static Background titleScreen;
 static Background gameOverScreen;
+static Numbers number;
 static int iterator;
 static Mat4 csMat;
 static Nave n1;
@@ -270,6 +272,7 @@ static void drawLaserBeams() {
 			} else {
 				for (iterator = 0; iterator < numAsteroids; iterator++) {
 					if(asteroids[iterator] != NULL)
+						if(!asteroids[iterator]->shot)
 						if((asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) < (tmp->coord[2] + 5 - (tmp->velZ/(velocity*1.0))))
 								&& (asteroids[iterator]->z + (asteroids[iterator]->speed*velocity) > (tmp->coord[2] - 5 - (asteroids[iterator]->speed*velocity) - (tmp->velZ/(velocity*1.0)))))
 							collided = Asteroid_collide(asteroids[iterator], tmp);
@@ -295,7 +298,8 @@ static void drawLaserBeams() {
 					asteroids[idColl]->hp-=1;
 					//printf("asteroidhp %d\n",asteroids[idColl]->hp);
 					//if(asteroids[idColl]->hp<=0){
-						asteroids[idColl]->shot=true;
+					asteroids[idColl]->shot=true;
+					n1->puntuacion+=asteroids[idColl]->r*5;
 						/*
 					Asteroid_destroy(asteroids[idColl]);
 					asteroids[idColl] = NULL;
@@ -350,6 +354,9 @@ static void createBackground() {
 				1
 		);
 		BackgroundBind(gameOverScreen, vertexPosLocBG, vertexColLocBG, textureLoc,2);
+
+	number=createNumbers();
+	numberBind(number, vertexPosLocBG, vertexColLocBG, textureLoc);
 }
 
 
@@ -434,11 +441,18 @@ static void initLight() {
 
 static void startKey(unsigned char key, int x, int y) {
 	switch (key) {
+	case 70:
+	case 102:
+		if(gameOver){
+			printf("final score: %d \n",n1->puntuacion);
+		}
+		break;
 	case 82:
 	case 114:
 		if(gameOver){
 			gameOver=false;
 			n1->hp=5;
+			n1->puntuacion=0;
 			startGame=true;
 			int i;
 			for(i=0;i<numAsteroids;i++){
@@ -913,6 +927,8 @@ static void display() {
 	// glUniform1i(glGetUniformLocation(bgProgram, "myTexture"), 0);
 	BackgroundDraw(background);
 
+	numberDraw(number,n1->puntuacion,bgProgram,viewMatrixLocBG,projMatrixLocBG,modelMatrixLocBG);
+
 
 	glUseProgram(programId);
 	glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, projMat.values);
@@ -951,6 +967,18 @@ static void display() {
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, view.values);
 	glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
 	nave_draw(n1);
+	int i=0;
+	mIdentity(&shipMat);
+	translate(&shipMat,1.1,0.9,0);
+	scale(&shipMat,0.06,0.1,0.2);
+	for(i=0;i<n1->hp;i++){
+		translate(&shipMat,-3,0,0);
+		glUseProgram(programId);
+		glUniformMatrix4fv(projMatrixLoc, 1, GL_TRUE, identity.values);
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_TRUE, identity.values);
+		glUniformMatrix4fv(modelMatrixLoc, 1, GL_TRUE, shipMat.values);
+		nave_draw(n1);
+	}
 
 	if(n1->hp<=0){
 		gameOver=true;
