@@ -1041,11 +1041,12 @@ int main(int argc, char **argv) {
 	setbuf(stdout, NULL);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE);
-	glutInitWindowSize(600, 600);
-	glutInitWindowPosition(100, 100);
+	//glutInitWindowSize(600, 600);
+	//glutInitWindowPosition(100, 100);
 	glutTimerFunc(50, timerFunc, 1);
 
 	glutCreateWindow("Demo proyecto final");
+	glutEnterGameMode();
 	glutDisplayFunc(displayChoice);
 	glutKeyboardFunc(startKey);
 	glutKeyboardUpFunc(endKey);
